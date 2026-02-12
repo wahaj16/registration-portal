@@ -1,0 +1,510 @@
+.exhibitor-success-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  min-height: 80vh;
+}
+
+.success-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.success-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  animation: bounce 1s ease-out;
+}
+
+.success-header h2 {
+  font-size: 2.5rem;
+  color: #2d3748 !important;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.success-header p {
+  color: #718096 !important;
+  font-size: 1.2rem;
+}
+
+.exhibitor-card {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  border-radius: 15px;
+  padding: 30px;
+  margin-bottom: 30px;
+  color: white;
+  box-shadow: 0 10px 25px rgba(67, 233, 123, 0.3);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.card-header h3 {
+  font-size: 1.5rem;
+  margin: 0;
+  font-weight: 600;
+  color: white;
+}
+
+.status-badges {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.exhibitor-number {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 1px;
+  color: white;
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.status-badge.pending {
+  background: rgba(255, 193, 7, 0.9);
+  color: #856404;
+}
+
+.status-badge.approved {
+  background: rgba(40, 167, 69, 0.9);
+  color: white;
+}
+
+.status-badge.rejected {
+  background: rgba(220, 53, 69, 0.9);
+  color: white;
+}
+
+.card-body {
+  display: grid;
+  gap: 30px;
+}
+
+.company-info h4,
+.booth-info h4,
+.employees-info h4 {
+  font-size: 1.3rem;
+  margin-bottom: 15px;
+  font-weight: 600;
+  opacity: 0.95;
+  color: white;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.info-row .label {
+  font-weight: 600;
+  opacity: 0.9;
+  min-width: 100px;
+  color: white;
+}
+
+.info-row .value {
+  font-weight: 500;
+  text-align: right;
+  flex: 1;
+  color: white;
+}
+
+.info-row .value a {
+  color: white;
+  text-decoration: underline;
+}
+
+.booth-details {
+  display: flex;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.booth-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 15px 20px;
+  border-radius: 10px;
+  min-width: 120px;
+}
+
+.booth-label {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  margin-bottom: 5px;
+  color: white;
+}
+
+.booth-value {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: white;
+}
+
+.total-amount {
+  color: #ffd700;
+  font-size: 1.4rem !important;
+}
+
+.employees-list {
+  display: grid;
+  gap: 15px;
+}
+
+.employee-item {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 15px;
+  border-radius: 10px;
+}
+
+.employee-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.employee-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: white;
+}
+
+.employee-number {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 8px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: white;
+}
+
+.employee-details {
+  display: flex;
+  gap: 15px;
+  font-size: 0.9rem;
+  opacity: 0.9;
+  flex-wrap: wrap;
+  color: white;
+}
+
+.barcode-section {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 10px;
+  margin-top: 20px;
+}
+
+.barcode-section h4 {
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: white;
+}
+
+.barcode-container {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 15px 0;
+  display: inline-block;
+}
+
+.barcode-note {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  margin-top: 10px;
+  font-style: italic;
+  color: white;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.print-button,
+.new-registration-button {
+  padding: 15px 30px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.print-button {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  color: white;
+}
+
+.new-registration-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.print-button:hover,
+.new-registration-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.instructions {
+  background: rgba(67, 233, 123, 0.1);
+  padding: 25px;
+  border-radius: 12px;
+  border-left: 4px solid #43e97b;
+}
+
+.instructions h4 {
+  color: #2d3748 !important;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.instructions ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.instructions li {
+  color: #4a5568 !important;
+  margin-bottom: 8px;
+  padding-left: 20px;
+  position: relative;
+  line-height: 1.5;
+}
+
+.instructions li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #48bb78;
+  font-weight: bold;
+}
+
+/* Print Styles */
+@media print {
+  .exhibitor-success-container {
+    padding: 0;
+    min-height: auto;
+  }
+  
+  .action-buttons,
+  .instructions {
+    display: none;
+  }
+  
+  .success-card {
+    box-shadow: none;
+    background: white;
+  }
+  
+  .exhibitor-card {
+    background: #f7fafc !important;
+    color: black !important;
+    border: 2px solid #e2e8f0;
+  }
+  
+  .card-header {
+    border-bottom-color: #e2e8f0 !important;
+  }
+  
+  .card-header h3 {
+    color: black !important;
+  }
+  
+  .exhibitor-number,
+  .status-badge {
+    background: #e2e8f0 !important;
+    color: black !important;
+  }
+  
+  .company-info h4,
+  .booth-info h4,
+  .employees-info h4 {
+    color: black !important;
+  }
+  
+  .info-row .label,
+  .info-row .value {
+    color: black !important;
+  }
+  
+  .booth-label,
+  .booth-value {
+    color: black !important;
+  }
+  
+  .employee-name,
+  .employee-number,
+  .employee-details {
+    color: black !important;
+  }
+  
+  .barcode-section {
+    background: #f7fafc !important;
+    border: 1px solid #e2e8f0;
+  }
+  
+  .barcode-section h4 {
+    color: black !important;
+  }
+  
+  .barcode-note {
+    color: black !important;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .exhibitor-success-container {
+    margin: 10px;
+    padding: 20px 15px;
+    min-height: auto;
+  }
+  
+  .card-header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  
+  .status-badges {
+    justify-content: center;
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .booth-details {
+    justify-content: center;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .print-button,
+  .new-registration-button {
+    width: 100%;
+  }
+  
+  .success-header h2 {
+    font-size: 2rem;
+  }
+  
+  .employee-details {
+    flex-direction: column;
+    gap: 5px;
+  }
+}
+/* Enhanced text visibility */
+.exhibitor-card * {
+  color: white !important;
+}
+
+.exhibitor-card .barcode-container * {
+  color: black !important;
+}
+
+.exhibitor-card .total-amount {
+  color: #ffd700 !important;
+}
+
+.exhibitor-card .status-badge.pending {
+  color: #856404 !important;
+}
+
+.exhibitor-card .status-badge.approved {
+  color: white !important;
+}
+
+.exhibitor-card .status-badge.rejected {
+  color: white !important;
+}
+
+/* Ensure all text elements have proper contrast */
+.exhibitor-card h1,
+.exhibitor-card h2,
+.exhibitor-card h3,
+.exhibitor-card h4,
+.exhibitor-card h5,
+.exhibitor-card h6,
+.exhibitor-card p,
+.exhibitor-card span,
+.exhibitor-card div,
+.exhibitor-card label {
+  color: white !important;
+}
+
+/* Exception for barcode container */
+.barcode-container h1,
+.barcode-container h2,
+.barcode-container h3,
+.barcode-container h4,
+.barcode-container h5,
+.barcode-container h6,
+.barcode-container p,
+.barcode-container span,
+.barcode-container div,
+.barcode-container label {
+  color: black !important;
+}
+/* Additional text visibility enhancements */
+.exhibitor-card .info-row .label,
+.exhibitor-card .info-row .value,
+.exhibitor-card h4,
+.exhibitor-card .barcode-note,
+.exhibitor-card .booth-label,
+.exhibitor-card .booth-value,
+.exhibitor-card .employee-name,
+.exhibitor-card .employee-details {
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  font-weight: 500;
+}
+
+/* Ensure strong contrast for all card text */
+.exhibitor-card {
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
