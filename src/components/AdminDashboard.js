@@ -7,7 +7,6 @@ import './AdminDashboard.css';
 const AdminDashboard = ({ onBack, admin }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedHall, setSelectedHall] = useState(1);
-  const [error, setError] = useState(null);
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: '📊' },
@@ -85,11 +84,6 @@ const AdminDashboard = ({ onBack, admin }) => {
       </div>
 
       <div className="dashboard-content">
-        {error && (
-          <div className="error-message">
-            {error}
-          </div>
-        )}
         {renderContent()}
       </div>
     </div>
