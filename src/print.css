@@ -1,0 +1,56 @@
+/* Print-only styles for visitor and exhibitor cards */
+@media print {
+  /* Set exact page size */
+  @page {
+    size: 3.5in 5in;
+    margin: 0;
+  }
+
+  /* Hide everything except the print content */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Show only the print container and its children */
+  .print-card-container,
+  .print-card-container * {
+    visibility: visible;
+  }
+
+  /* Position the print container */
+  .print-card-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 3.5in;
+    height: 5in;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Prevent scaling */
+  html, body {
+    width: 3.5in;
+    height: 5in;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
+
+  /* Ensure backgrounds and colors print */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
+
+  /* Remove any transforms or transitions during print */
+  * {
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}

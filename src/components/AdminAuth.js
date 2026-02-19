@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { FaArrowLeft, FaUserShield, FaEnvelope, FaLock, FaUser, FaSpinner } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import AdminDashboard from './AdminDashboard';
-import './AdminAuth.css';
 
 const AdminAuth = ({ onBack }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -12,7 +14,6 @@ const AdminAuth = ({ onBack }) => {
     confirmPassword: ''
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
 
   const { login, signup, admin, loading, logout } = useAuth();
 
@@ -21,42 +22,42 @@ const AdminAuth = ({ onBack }) => {
       ...formData,
       [e.target.name]: e.target.value
     });
-    if (error) setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
 
     try {
       if (isLogin) {
-        // Login
         const result = await login(formData.email, formData.password);
         if (!result.success) {
-          setError(result.message);
+          toast.error(result.message);
+        } else {
+          toast.success('Welcome back!');
         }
       } else {
-        // Signup
         if (formData.password !== formData.confirmPassword) {
-          setError('Passwords do not match');
+          toast.error('Passwords do not match');
           setIsLoading(false);
           return;
         }
 
         if (formData.password.length < 6) {
-          setError('Password must be at least 6 characters long');
+          toast.error('Password must be at least 6 characters');
           setIsLoading(false);
           return;
         }
 
         const result = await signup(formData.name, formData.email, formData.password);
         if (!result.success) {
-          setError(result.message);
+          toast.error(result.message);
+        } else {
+          toast.success('Account created successfully!');
         }
       }
     } catch (error) {
-      setError('An unexpected error occurred');
+      toast.error('An unexpected error occurred');
     } finally {
       setIsLoading(false);
     }
@@ -70,141 +71,206 @@ const AdminAuth = ({ onBack }) => {
       password: '',
       confirmPassword: ''
     });
-    setError('');
   };
 
   const handleLogout = () => {
     logout();
+    toast.success('Logged out successfully');
     onBack();
   };
 
-  // Show loading while checking authentication
   if (loading) {
     return (
-      <div className="auth-loading">
-        <div className="loading-spinner"></div>
-        <p>Checking authentication...</p>
+      <div className="min-h-screen flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center"
+        >
+          <FaSpinner className="animate-spin text-5xl text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600 text-lg">Checking authentication...</p>
+        </motion.div>
       </div>
     );
   }
 
-  // Show admin dashboard if authenticated
   if (admin) {
     return <AdminDashboard onBack={handleLogout} admin={admin} />;
   }
 
-  // Show login/signup form
   return (
-    <div className="admin-auth-container">
-      <div className="auth-card">
-        <div className="auth-header">
-          <button className="back-button" onClick={onBack}>← Back</button>
-          <h2>{isLogin ? 'Admin Login' : 'Admin Signup'}</h2>
-          <p>{isLogin ? 'Access the administrative dashboard' : 'Create a new admin account'}</p>
-        </div>
+    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="max-w-md mx-auto"
+      >
+        <motion.button
+          whileHover={{ x: -5 }}
+          onClick={onBack}
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 font-medium transition-colors"
+        >
+          <FaArrowLeft /> Back to Home
+        </motion.button>
 
-        <form className="auth-form" onSubmit={handleSubmit}>
-          <div className="auth-icon">
-            {isLogin ? '🔐' : '👤'}
-          </div>
-
-          {error && (
-            <div className="error-message">
-              {error}
-            </div>
-          )}
-
-          {!isLogin && (
-            <div className="form-group">
-              <label>Full Name</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-                placeholder="Enter your full name"
-                disabled={isLoading}
-              />
-            </div>
-          )}
-
-          <div className="form-group">
-            <label>Email Address</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              placeholder="Enter admin email"
-              autoComplete="username"
-              disabled={isLoading}
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Password</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              placeholder="Enter password"
-              autoComplete={isLogin ? "current-password" : "new-password"}
-              disabled={isLoading}
-            />
-          </div>
-
-          {!isLogin && (
-            <div className="form-group">
-              <label>Confirm Password</label>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                required
-                placeholder="Confirm your password"
-                autoComplete="new-password"
-                disabled={isLoading}
-              />
-            </div>
-          )}
-
-          <button 
-            type="submit" 
-            className="submit-button admin-submit"
-            disabled={isLoading}
-          >
-            {isLoading ? (isLogin ? 'Logging in...' : 'Creating Account...') : (isLogin ? 'Login to Dashboard' : 'Create Admin Account')}
-          </button>
-
-          <div className="auth-toggle">
-            <p>
-              {isLogin ? "Don't have an admin account? " : "Already have an admin account? "}
-              <button 
-                type="button" 
-                className="toggle-button"
-                onClick={toggleMode}
-                disabled={isLoading}
-              >
-                {isLogin ? 'Sign Up' : 'Login'}
-              </button>
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          className="card"
+        >
+          <div className="text-center mb-8">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
+              className="w-20 h-20 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"
+            >
+              <FaUserShield className="text-4xl text-white" />
+            </motion.div>
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">
+              {isLogin ? 'Admin Login' : 'Admin Signup'}
+            </h2>
+            <p className="text-gray-600">
+              {isLogin ? 'Access the administrative dashboard' : 'Create a new admin account'}
             </p>
           </div>
 
-          {isLogin && (
-            <div className="demo-credentials">
-              <p><strong>Demo Credentials:</strong></p>
-              <p>Email: admin@admin.com</p>
-              <p>Password: admin123</p>
-              <p><em>Note: You can also create a new admin account</em></p>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {!isLogin && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <FaUser className="inline mr-2" />
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  placeholder="Enter your full name"
+                  disabled={isLoading}
+                  className="input-field"
+                />
+              </motion.div>
+            )}
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <FaEnvelope className="inline mr-2" />
+                Email Address
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                placeholder="admin@example.com"
+                autoComplete="username"
+                disabled={isLoading}
+                className="input-field"
+              />
             </div>
-          )}
-        </form>
-      </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <FaLock className="inline mr-2" />
+                Password
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                placeholder="Enter password"
+                autoComplete={isLogin ? "current-password" : "new-password"}
+                disabled={isLoading}
+                className="input-field"
+              />
+            </div>
+
+            {!isLogin && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <FaLock className="inline mr-2" />
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  required
+                  placeholder="Confirm your password"
+                  autoComplete="new-password"
+                  disabled={isLoading}
+                  className="input-field"
+                />
+              </motion.div>
+            )}
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              type="submit"
+              disabled={isLoading}
+              className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <FaSpinner className="animate-spin" />
+                  {isLogin ? 'Logging in...' : 'Creating Account...'}
+                </span>
+              ) : (
+                isLogin ? 'Login to Dashboard' : 'Create Admin Account'
+              )}
+            </motion.button>
+
+            <div className="text-center pt-4 border-t border-gray-200">
+              <p className="text-gray-600">
+                {isLogin ? "Don't have an admin account? " : "Already have an admin account? "}
+                <button
+                  type="button"
+                  onClick={toggleMode}
+                  disabled={isLoading}
+                  className="text-blue-600 hover:text-blue-700 font-semibold transition-colors"
+                >
+                  {isLogin ? 'Sign Up' : 'Login'}
+                </button>
+              </p>
+            </div>
+
+            {isLogin && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-4 mt-4 border border-orange-200"
+              >
+                <p className="text-sm font-semibold text-gray-700 mb-2">Demo Credentials:</p>
+                <div className="space-y-1 text-sm text-gray-600">
+                  <p><span className="font-medium">Email:</span> admin@admin.com</p>
+                  <p><span className="font-medium">Password:</span> admin123</p>
+                </div>
+                <p className="text-xs text-gray-500 mt-2 italic">
+                  You can also create a new admin account
+                </p>
+              </motion.div>
+            )}
+          </form>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };

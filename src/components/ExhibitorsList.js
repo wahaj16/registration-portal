@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaSearch, FaBuilding, FaEnvelope, FaPhone, FaGlobe, FaIndustry, FaWarehouse, FaDollarSign, FaTimes, FaBarcode, FaUsers, FaCheckCircle, FaClock, FaTimesCircle, FaFilter, FaPrint } from 'react-icons/fa';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 import BarcodeGenerator from './BarcodeGenerator';
 import { API_ENDPOINTS } from '../config/api';
 
 const ExhibitorsList = ({ hallNumber = null }) => {
   const [exhibitors, setExhibitors] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedExhibitor, setSelectedExhibitor] = useState(null);
   const [filterHall, setFilterHall] = useState(hallNumber || 'all');
@@ -29,7 +31,7 @@ const ExhibitorsList = ({ hallNumber = null }) => {
       setExhibitors(response.data.exhibitors);
     } catch (error) {
       console.error('Error fetching exhibitors:', error);
-      setError('Failed to load exhibitors');
+      toast.error('Failed to load exhibitors');
     } finally {
       setLoading(false);
     }
@@ -48,244 +50,595 @@ const ExhibitorsList = ({ hallNumber = null }) => {
     return matchesSearch && matchesHall && matchesStatus;
   });
 
-  const handleViewDetails = (exhibitor) => {
-    setSelectedExhibitor(exhibitor);
-  };
-
-  const closeModal = () => {
-    setSelectedExhibitor(null);
-  };
-
-  const getStatusColor = (status) => {
+  const getStatusConfig = (status) => {
     switch (status) {
-      case 'approved': return '#28a745';
-      case 'pending': return '#ffc107';
-      case 'rejected': return '#dc3545';
-      default: return '#6c757d';
+      case 'approved':
+        return { icon: FaCheckCircle, color: 'text-green-600', bg: 'bg-green-100', label: 'Approved' };
+      case 'pending':
+        return { icon: FaClock, color: 'text-yellow-600', bg: 'bg-yellow-100', label: 'Pending' };
+      case 'rejected':
+        return { icon: FaTimesCircle, color: 'text-red-600', bg: 'bg-red-100', label: 'Rejected' };
+      default:
+        return { icon: FaClock, color: 'text-gray-600', bg: 'bg-gray-100', label: 'Unknown' };
     }
+  };
+
+  const handlePrintCard = (exhibitor) => {
+    const printWindow = window.open('', '_blank');
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Exhibitor Card - ${exhibitor.companyName}</title>
+          <meta charset="UTF-8">
+          <style>
+            @page {
+              size: 3.5in 5in;
+              margin: 0;
+            }
+            
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+              color-adjust: exact;
+            }
+            
+            html, body {
+              width: 3.5in;
+              height: 5in;
+              margin: 0;
+              padding: 0;
+              overflow: hidden;
+            }
+            
+            body {
+              font-family: 'Arial', sans-serif;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+            }
+            
+            .card {
+              width: 3.2in;
+              height: 4.7in;
+              background: white;
+              border-radius: 16px;
+              box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              padding: 20px;
+              text-align: center;
+            }
+            
+            .header {
+              width: 100%;
+              padding: 15px;
+              background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+              border-radius: 12px;
+              margin-bottom: 20px;
+            }
+            
+            .header h1 {
+              color: white;
+              font-size: 18px;
+              font-weight: bold;
+              margin-bottom: 5px;
+            }
+            
+            .header p {
+              color: rgba(255,255,255,0.9);
+              font-size: 11px;
+            }
+            
+            .avatar {
+              width: 80px;
+              height: 80px;
+              background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: white;
+              font-size: 36px;
+              font-weight: bold;
+              margin-bottom: 15px;
+              border: 4px solid #f0f0f0;
+            }
+            
+            .company-name {
+              font-size: 20px;
+              font-weight: bold;
+              color: #333;
+              margin-bottom: 8px;
+              line-height: 1.2;
+            }
+            
+            .contact-person {
+              font-size: 14px;
+              color: #666;
+              margin-bottom: 5px;
+              font-weight: 500;
+            }
+            
+            .designation {
+              font-size: 12px;
+              color: #888;
+              margin-bottom: 15px;
+            }
+            
+            .hall-info {
+              display: inline-block;
+              background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+              color: white;
+              padding: 6px 16px;
+              border-radius: 20px;
+              font-size: 11px;
+              font-weight: bold;
+              margin-bottom: 15px;
+            }
+            
+            .barcode-section {
+              margin-top: auto;
+              padding-top: 15px;
+              border-top: 2px dashed #e0e0e0;
+              width: 100%;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+            }
+            
+            .barcode-section svg {
+              max-width: 100%;
+              height: auto;
+            }
+            
+            .footer {
+              margin-top: 10px;
+              font-size: 9px;
+              color: #999;
+            }
+            
+            @media print {
+              html, body {
+                width: 3.5in;
+                height: 5in;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+              }
+              
+              body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+              }
+              
+              * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="card">
+            <div class="header">
+              <h1>EXHIBITOR PASS</h1>
+              <p>Registration Portal</p>
+            </div>
+            
+            <div class="avatar">
+              ${exhibitor.companyName.charAt(0).toUpperCase()}
+            </div>
+            
+            <div class="company-name">${exhibitor.companyName}</div>
+            
+            <div class="contact-person">${exhibitor.contactPerson}</div>
+            
+            <div class="designation">Exhibitor Representative</div>
+            
+            <div class="hall-info">Hall ${exhibitor.hallNumber} • ${exhibitor.exhibitorNumber}</div>
+            
+            <div class="barcode-section">
+              <div id="barcode"></div>
+              <div class="footer">Scan for verification</div>
+            </div>
+          </div>
+          
+          <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+          <script>
+            window.onload = function() {
+              JsBarcode("#barcode", "${exhibitor.exhibitorNumber}", {
+                format: "CODE128",
+                width: 1.5,
+                height: 50,
+                displayValue: true,
+                fontSize: 12,
+                margin: 5
+              });
+              
+              setTimeout(function() {
+                window.print();
+                window.onafterprint = function() {
+                  window.close();
+                };
+              }, 500);
+            };
+          </script>
+        </body>
+      </html>
+    `;
+    
+    printWindow.document.write(printContent);
+    printWindow.document.close();
   };
 
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Loading exhibitors...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="error-container">
-        <p>{error}</p>
-        <button onClick={fetchExhibitors} className="retry-button">Retry</button>
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading exhibitors...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="exhibitors-list">
-      <div className="list-header">
-        <h2>
-          {hallNumber ? `Hall ${hallNumber} Exhibitors` : 'All Exhibitors'} 
-          ({filteredExhibitors.length})
-        </h2>
-        <div className="filters-container">
-          <input
-            type="text"
-            placeholder="Search exhibitors..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
-          {!hallNumber && (
+    <div className="space-y-6">
+      {/* Header & Filters */}
+      <div className="glass-effect rounded-xl p-6">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800">
+                {hallNumber ? `Hall ${hallNumber} Exhibitors` : 'All Exhibitors'}
+              </h2>
+              <p className="text-gray-600">Total: {filteredExhibitors.length} exhibitors</p>
+            </div>
+            <div className="relative">
+              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search exhibitors..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:border-purple-500 focus:ring-4 focus:ring-purple-100 transition-all outline-none bg-white w-full md:w-80"
+              />
+            </div>
+          </div>
+          
+          <div className="flex flex-wrap gap-3">
+            <div className="flex items-center gap-2">
+              <FaFilter className="text-gray-500" />
+              <span className="text-sm font-semibold text-gray-600">Filters:</span>
+            </div>
+            {!hallNumber && (
+              <select
+                value={filterHall}
+                onChange={(e) => setFilterHall(e.target.value)}
+                className="px-4 py-2 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all outline-none bg-white text-sm"
+              >
+                <option value="all">All Halls</option>
+                <option value="1">Hall 1</option>
+                <option value="2">Hall 2</option>
+                <option value="3">Hall 3</option>
+              </select>
+            )}
             <select
-              value={filterHall}
-              onChange={(e) => setFilterHall(e.target.value)}
-              className="filter-select"
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="px-4 py-2 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all outline-none bg-white text-sm"
             >
-              <option value="all">All Halls</option>
-              <option value="1">Hall 1</option>
-              <option value="2">Hall 2</option>
-              <option value="3">Hall 3</option>
+              <option value="all">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
             </select>
-          )}
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="filter-select"
-          >
-            <option value="all">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-          </select>
+          </div>
         </div>
       </div>
 
-      <div className="exhibitors-grid">
-        {filteredExhibitors.map(exhibitor => (
-          <div key={exhibitor._id} className="exhibitor-card">
-            <div className="exhibitor-header">
-              <h3>{exhibitor.companyName}</h3>
-              <div className="exhibitor-badges">
-                <span className="exhibitor-number">{exhibitor.exhibitorNumber}</span>
-                <span 
-                  className="status-badge"
-                  style={{ backgroundColor: getStatusColor(exhibitor.status) }}
-                >
-                  {exhibitor.status.toUpperCase()}
-                </span>
+      {/* Exhibitors Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredExhibitors.map((exhibitor, index) => {
+          const statusConfig = getStatusConfig(exhibitor.status);
+          const StatusIcon = statusConfig.icon;
+          
+          return (
+            <motion.div
+              key={exhibitor._id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className="glass-effect rounded-xl p-6 hover:shadow-2xl transition-all duration-300 cursor-pointer group"
+              onClick={() => setSelectedExhibitor(exhibitor)}
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                  {exhibitor.companyName.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold">
+                    {exhibitor.exhibitorNumber}
+                  </span>
+                  <span className={`px-3 py-1 ${statusConfig.bg} ${statusConfig.color} rounded-full text-xs font-semibold flex items-center gap-1`}>
+                    <StatusIcon className="text-xs" />
+                    {statusConfig.label}
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className="exhibitor-info">
-              <p><strong>Contact:</strong> {exhibitor.contactPerson}</p>
-              <p><strong>Industry:</strong> {exhibitor.industry}</p>
-              <p><strong>Hall:</strong> {exhibitor.hallNumber}</p>
-              <p><strong>Booth Size:</strong> {exhibitor.boothSize.charAt(0).toUpperCase() + exhibitor.boothSize.slice(1)}</p>
-              <p><strong>Amount:</strong> ${exhibitor.totalAmount}</p>
-              <p><strong>Employees:</strong> {exhibitor.employees?.length || 0}</p>
-            </div>
-            <div className="exhibitor-actions">
-              <button 
-                className="view-details-btn"
-                onClick={() => handleViewDetails(exhibitor)}
-              >
+              
+              <h3 className="text-lg font-bold text-gray-800 mb-3 group-hover:text-purple-600 transition-colors">
+                {exhibitor.companyName}
+              </h3>
+              
+              <div className="space-y-2 text-sm text-gray-600 mb-4">
+                <div className="flex items-center gap-2">
+                  <FaBuilding className="text-gray-400" />
+                  <span className="truncate">{exhibitor.contactPerson}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FaIndustry className="text-gray-400" />
+                  <span className="truncate">{exhibitor.industry}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FaWarehouse className="text-gray-400" />
+                  <span>Hall {exhibitor.hallNumber} • {exhibitor.boothSize}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FaDollarSign className="text-gray-400" />
+                  <span className="font-semibold text-purple-600">${exhibitor.totalAmount}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FaUsers className="text-gray-400" />
+                  <span>{exhibitor.employees?.length || 0} employees</span>
+                </div>
+              </div>
+
+              <button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 rounded-lg font-semibold hover:shadow-lg transition-all group-hover:scale-105">
                 View Details
               </button>
-            </div>
-          </div>
-        ))}
+            </motion.div>
+          );
+        })}
       </div>
 
       {filteredExhibitors.length === 0 && (
-        <div className="no-results">
-          <p>No exhibitors found matching your criteria.</p>
+        <div className="glass-effect rounded-xl p-12 text-center">
+          <FaBuilding className="text-6xl text-gray-300 mx-auto mb-4" />
+          <p className="text-gray-600 text-lg">No exhibitors found matching your criteria.</p>
         </div>
       )}
 
-      {/* Exhibitor Details Modal */}
-      {selectedExhibitor && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Exhibitor Details</h2>
-              <button className="close-button" onClick={closeModal}>×</button>
-            </div>
-            <div className="modal-body">
-              <div className="exhibitor-details">
-                <div className="detail-section">
-                  <h3>Company Information</h3>
-                  <div className="detail-grid">
-                    <div className="detail-item">
-                      <label>Company Name:</label>
-                      <span>{selectedExhibitor.companyName}</span>
+      {/* Modal */}
+      <AnimatePresence>
+        {selectedExhibitor && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setSelectedExhibitor(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", duration: 0.5 }}
+              className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="sticky top-0 bg-gradient-to-r from-purple-500 to-pink-500 text-white p-6 rounded-t-2xl">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-2xl font-bold">
+                      {selectedExhibitor.companyName.charAt(0).toUpperCase()}
                     </div>
-                    <div className="detail-item">
-                      <label>Exhibitor Number:</label>
-                      <span>{selectedExhibitor.exhibitorNumber}</span>
+                    <div>
+                      <h2 className="text-2xl font-bold">{selectedExhibitor.companyName}</h2>
+                      <p className="text-purple-100">{selectedExhibitor.exhibitorNumber}</p>
                     </div>
-                    <div className="detail-item">
-                      <label>Contact Person:</label>
-                      <span>{selectedExhibitor.contactPerson}</span>
+                  </div>
+                  <button
+                    onClick={() => setSelectedExhibitor(null)}
+                    className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
+                  >
+                    <FaTimes className="text-xl" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6 space-y-6">
+                {/* Company Information */}
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6">
+                  <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <FaBuilding className="text-purple-600" />
+                    Company Information
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-semibold text-gray-600">Company Name</label>
+                      <p className="text-gray-800 font-medium">{selectedExhibitor.companyName}</p>
                     </div>
-                    <div className="detail-item">
-                      <label>Email:</label>
-                      <span>{selectedExhibitor.email}</span>
+                    <div>
+                      <label className="text-sm font-semibold text-gray-600">Exhibitor Number</label>
+                      <p className="text-gray-800 font-medium">{selectedExhibitor.exhibitorNumber}</p>
                     </div>
-                    <div className="detail-item">
-                      <label>Phone:</label>
-                      <span>{selectedExhibitor.phone}</span>
+                    <div>
+                      <label className="text-sm font-semibold text-gray-600">Contact Person</label>
+                      <p className="text-gray-800 font-medium">{selectedExhibitor.contactPerson}</p>
                     </div>
-                    <div className="detail-item">
-                      <label>Industry:</label>
-                      <span>{selectedExhibitor.industry}</span>
+                    <div>
+                      <label className="text-sm font-semibold text-gray-600 flex items-center gap-1">
+                        <FaEnvelope className="text-xs" /> Email
+                      </label>
+                      <p className="text-gray-800 font-medium break-all">{selectedExhibitor.email}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-semibold text-gray-600 flex items-center gap-1">
+                        <FaPhone className="text-xs" /> Phone
+                      </label>
+                      <p className="text-gray-800 font-medium">{selectedExhibitor.phone}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-semibold text-gray-600 flex items-center gap-1">
+                        <FaIndustry className="text-xs" /> Industry
+                      </label>
+                      <p className="text-gray-800 font-medium">{selectedExhibitor.industry}</p>
                     </div>
                     {selectedExhibitor.website && (
-                      <div className="detail-item">
-                        <label>Website:</label>
-                        <span>
-                          <a href={selectedExhibitor.website} target="_blank" rel="noopener noreferrer">
-                            {selectedExhibitor.website}
-                          </a>
-                        </span>
+                      <div className="md:col-span-2">
+                        <label className="text-sm font-semibold text-gray-600 flex items-center gap-1">
+                          <FaGlobe className="text-xs" /> Website
+                        </label>
+                        <a 
+                          href={selectedExhibitor.website} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-purple-600 hover:text-purple-700 font-medium underline"
+                        >
+                          {selectedExhibitor.website}
+                        </a>
                       </div>
                     )}
-                    <div className="detail-item">
-                      <label>Status:</label>
-                      <span 
-                        className="status-badge"
-                        style={{ backgroundColor: getStatusColor(selectedExhibitor.status) }}
-                      >
-                        {selectedExhibitor.status.toUpperCase()}
-                      </span>
+                    <div>
+                      <label className="text-sm font-semibold text-gray-600">Status</label>
+                      <div className="flex items-center gap-2 mt-1">
+                        {(() => {
+                          const statusConfig = getStatusConfig(selectedExhibitor.status);
+                          const StatusIcon = statusConfig.icon;
+                          return (
+                            <>
+                              <StatusIcon className={statusConfig.color} />
+                              <span className={`px-3 py-1 ${statusConfig.bg} ${statusConfig.color} rounded-full text-sm font-semibold`}>
+                                {statusConfig.label}
+                              </span>
+                            </>
+                          );
+                        })()}
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="detail-section">
-                  <h3>Booth Information</h3>
-                  <div className="booth-info-grid">
-                    <div className="booth-info-item">
-                      <label>Hall Number:</label>
-                      <span>Hall {selectedExhibitor.hallNumber}</span>
+                {/* Booth Information */}
+                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6">
+                  <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <FaWarehouse className="text-blue-600" />
+                    Booth Information
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 border border-blue-200">
+                      <label className="text-sm font-semibold text-gray-600">Hall Number</label>
+                      <p className="text-2xl font-bold text-blue-600">Hall {selectedExhibitor.hallNumber}</p>
                     </div>
-                    <div className="booth-info-item">
-                      <label>Booth Size:</label>
-                      <span>{selectedExhibitor.boothSize.charAt(0).toUpperCase() + selectedExhibitor.boothSize.slice(1)}</span>
+                    <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 border border-blue-200">
+                      <label className="text-sm font-semibold text-gray-600">Booth Size</label>
+                      <p className="text-2xl font-bold text-blue-600 capitalize">{selectedExhibitor.boothSize}</p>
                     </div>
-                    <div className="booth-info-item">
-                      <label>Total Amount:</label>
-                      <span className="amount">${selectedExhibitor.totalAmount}</span>
+                    <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 border border-blue-200">
+                      <label className="text-sm font-semibold text-gray-600">Total Amount</label>
+                      <p className="text-2xl font-bold text-green-600">${selectedExhibitor.totalAmount}</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="detail-section">
-                  <h3>Description</h3>
-                  <p>{selectedExhibitor.description}</p>
+                {/* Description */}
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6">
+                  <h3 className="text-lg font-bold text-gray-800 mb-3">Company Description</h3>
+                  <p className="text-gray-700 leading-relaxed">{selectedExhibitor.description}</p>
                 </div>
 
+                {/* Special Requirements */}
                 {selectedExhibitor.specialRequirements && (
-                  <div className="detail-section">
-                    <h3>Special Requirements</h3>
-                    <p>{selectedExhibitor.specialRequirements}</p>
+                  <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-6">
+                    <h3 className="text-lg font-bold text-gray-800 mb-3">Special Requirements</h3>
+                    <p className="text-gray-700 leading-relaxed">{selectedExhibitor.specialRequirements}</p>
                   </div>
                 )}
 
+                {/* Employees */}
                 {selectedExhibitor.employees && selectedExhibitor.employees.length > 0 && (
-                  <div className="detail-section">
-                    <h3>Employees ({selectedExhibitor.employees.length})</h3>
-                    <div className="employees-grid">
+                  <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-6">
+                    <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                      <FaUsers className="text-indigo-600" />
+                      Employees ({selectedExhibitor.employees.length})
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {selectedExhibitor.employees.map((employee, index) => (
-                        <div key={index} className="employee-card">
-                          <h4>{employee.name}</h4>
-                          <p><strong>Position:</strong> {employee.position}</p>
-                          <p><strong>Email:</strong> {employee.email}</p>
-                          <p><strong>Phone:</strong> {employee.phone}</p>
-                          <p><strong>Employee ID:</strong> {employee.employeeNumber}</p>
+                        <div key={index} className="bg-white/80 backdrop-blur-sm rounded-lg p-4 border border-indigo-200">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+                              {employee.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-gray-800">{employee.name}</h4>
+                              <p className="text-sm text-gray-600">{employee.position}</p>
+                            </div>
+                          </div>
+                          <div className="space-y-1 text-sm text-gray-600">
+                            <p className="flex items-center gap-2">
+                              <FaEnvelope className="text-xs" />
+                              {employee.email}
+                            </p>
+                            <p className="flex items-center gap-2">
+                              <FaPhone className="text-xs" />
+                              {employee.phone}
+                            </p>
+                            <p className="text-xs text-gray-500">ID: {employee.employeeNumber}</p>
+                          </div>
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
 
-                <div className="detail-section">
-                  <h3>Exhibitor Barcode</h3>
-                  <div className="barcode-container">
+                {/* Barcode */}
+                <div className="bg-gradient-to-br from-gray-50 to-slate-50 rounded-xl p-6">
+                  <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <FaBarcode className="text-gray-600" />
+                    Exhibitor Barcode
+                  </h3>
+                  <div className="bg-white rounded-lg p-6 flex justify-center border-2 border-dashed border-gray-300">
                     <BarcodeGenerator 
                       value={selectedExhibitor.exhibitorNumber} 
                       width={2} 
-                      height={60} 
+                      height={80} 
                       displayValue={true}
                     />
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
+
+              {/* Modal Footer */}
+              <div className="sticky bottom-0 bg-gray-50 p-6 rounded-b-2xl border-t border-gray-200">
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => handlePrintCard(selectedExhibitor)}
+                    className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                  >
+                    <FaPrint /> Print Exhibitor Card
+                  </button>
+                  <button
+                    onClick={() => setSelectedExhibitor(null)}
+                    className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
