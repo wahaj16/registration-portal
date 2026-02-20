@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaSearch, FaUser, FaEnvelope, FaPhone, FaBuilding, FaCalendar, FaTimes, FaBarcode, FaCheckCircle, FaPrint } from 'react-icons/fa';
+import { FaSearch, FaUser, FaEnvelope, FaPhone, FaBuilding, FaCalendar, FaTimes, FaBarcode, FaCheckCircle, FaPrint, FaBriefcase } from 'react-icons/fa';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import BarcodeGenerator from './BarcodeGenerator';
@@ -214,7 +214,7 @@ const VisitorsList = () => {
             
             ${visitor.company ? `<div class="company"><strong>${visitor.company}</strong></div>` : ''}
             
-            <div class="designation">Visitor</div>
+            ${visitor.designation ? `<div class="designation">${visitor.designation}</div>` : '<div class="designation">Visitor</div>'}
             
             <div class="visitor-number">${visitor.visitorNumber}</div>
             
@@ -400,6 +400,14 @@ const VisitorsList = () => {
                       <label className="text-sm font-semibold text-gray-600">Visitor Number</label>
                       <p className="text-gray-800 font-medium">{selectedVisitor.visitorNumber}</p>
                     </div>
+                    {selectedVisitor.designation && (
+                      <div>
+                        <label className="text-sm font-semibold text-gray-600 flex items-center gap-1">
+                          <FaBriefcase className="text-xs" /> Designation
+                        </label>
+                        <p className="text-gray-800 font-medium">{selectedVisitor.designation}</p>
+                      </div>
+                    )}
                     <div>
                       <label className="text-sm font-semibold text-gray-600 flex items-center gap-1">
                         <FaEnvelope className="text-xs" /> Email

@@ -25,6 +25,10 @@ const VisitorSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  designation: {
+    type: String,
+    trim: true
+  },
   interests: {
     type: String,
     trim: true

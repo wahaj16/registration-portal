@@ -64,11 +64,6 @@ const ExhibitorSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  boothSize: {
-    type: String,
-    required: true,
-    enum: ['small', 'medium', 'large', 'premium']
-  },
   hallNumber: {
     type: Number,
     required: true,
@@ -92,10 +87,6 @@ const ExhibitorSchema = new mongoose.Schema({
     type: String,
     enum: ['pending', 'approved', 'rejected'],
     default: 'pending'
-  },
-  totalAmount: {
-    type: Number,
-    required: true
   }
 }, {
   timestamps: true

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaArrowLeft, FaBuilding, FaEnvelope, FaPhone, FaGlobe, FaIndustry, FaWarehouse, FaUsers, FaPlus, FaTrash, FaDollarSign } from 'react-icons/fa';
+import { FaArrowLeft, FaBuilding, FaEnvelope, FaPhone, FaGlobe, FaIndustry, FaWarehouse, FaUsers, FaPlus, FaTrash } from 'react-icons/fa';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import ExhibitorSuccess from './ExhibitorSuccess';
@@ -14,7 +14,6 @@ const ExhibitorRegistration = ({ onBack }) => {
     phone: '',
     website: '',
     industry: '',
-    boothSize: 'small',
     hallNumber: 1,
     description: '',
     specialRequirements: ''
@@ -28,28 +27,35 @@ const ExhibitorRegistration = ({ onBack }) => {
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [exhibitorData, setExhibitorData] = useState(null);
 
-  const boothPrices = {
-    small: 500,
-    medium: 800,
-    large: 1200,
-    premium: 1800
-  };
-
-  const boothDetails = {
-    small: { size: '3x3m', desc: 'Perfect for startups' },
-    medium: { size: '6x3m', desc: 'Ideal for growing businesses' },
-    large: { size: '6x6m', desc: 'Great for established companies' },
-    premium: { size: '9x6m', desc: 'Premium showcase space' }
-  };
-
   const handleChange = (e) => {
+    const { name, value } = e.target;
+    
+    // Phone number validation - only allow digits and limit to 11
+    if (name === 'phone') {
+      const digitsOnly = value.replace(/\D/g, '');
+      if (digitsOnly.length <= 11) {
+        setFormData({
+          ...formData,
+          [name]: digitsOnly
+        });
+      }
+      return;
+    }
+    
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: value
     });
   };
 
   const handleEmployeeChange = (index, field, value) => {
+    // Phone number validation for employees
+    if (field === 'phone') {
+      const digitsOnly = value.replace(/\D/g, '');
+      if (digitsOnly.length > 11) return;
+      value = digitsOnly;
+    }
+    
     const updatedEmployees = [...employees];
     updatedEmployees[index][field] = value;
     setEmployees(updatedEmployees);
@@ -72,11 +78,27 @@ const ExhibitorRegistration = ({ onBack }) => {
     e.preventDefault();
     setIsLoading(true);
 
-    try {
-      const validEmployees = employees.filter(emp => 
-        emp.name.trim() && emp.email.trim() && emp.phone.trim() && emp.position.trim()
-      );
+    // Validate phone number length
+    if (formData.phone.length !== 11) {
+      toast.error('Phone number must be exactly 11 digits');
+      setIsLoading(false);
+      return;
+    }
 
+    // Validate employee phone numbers
+    const validEmployees = employees.filter(emp => 
+      emp.name.trim() && emp.email.trim() && emp.phone.trim() && emp.position.trim()
+    );
+
+    for (const emp of validEmployees) {
+      if (emp.phone.length !== 11) {
+        toast.error(`Employee ${emp.name}'s phone number must be exactly 11 digits`);
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    try {
       const submissionData = {
         ...formData,
         employees: validEmployees
@@ -107,7 +129,6 @@ const ExhibitorRegistration = ({ onBack }) => {
       phone: '',
       website: '',
       industry: '',
-      boothSize: 'small',
       hallNumber: 1,
       description: '',
       specialRequirements: ''
@@ -214,7 +235,7 @@ const ExhibitorRegistration = ({ onBack }) => {
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     <FaPhone className="inline mr-2" />
-                    Phone Number *
+                    Phone Number (11 digits) *
                   </label>
                   <input
                     type="tel"
@@ -222,10 +243,15 @@ const ExhibitorRegistration = ({ onBack }) => {
                     value={formData.phone}
                     onChange={handleChange}
                     required
-                    placeholder="Enter phone number"
+                    placeholder="Enter 11 digit phone number"
                     disabled={isLoading}
+                    pattern="\d{11}"
+                    maxLength="11"
                     className="input-field"
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    {formData.phone.length}/11 digits
+                  </p>
                 </div>
 
                 <div>
@@ -270,63 +296,23 @@ const ExhibitorRegistration = ({ onBack }) => {
                 Booth Information
               </h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Booth Size *
-                  </label>
-                  <select
-                    name="boothSize"
-                    value={formData.boothSize}
-                    onChange={handleChange}
-                    required
-                    disabled={isLoading}
-                    className="input-field"
-                  >
-                    {Object.entries(boothDetails).map(([key, value]) => (
-                      <option key={key} value={key}>
-                        {key.charAt(0).toUpperCase() + key.slice(1)} ({value.size}) - ${boothPrices[key]}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="text-sm text-gray-500 mt-1">{boothDetails[formData.boothSize].desc}</p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Hall Number *
-                  </label>
-                  <select
-                    name="hallNumber"
-                    value={formData.hallNumber}
-                    onChange={handleChange}
-                    required
-                    disabled={isLoading}
-                    className="input-field"
-                  >
-                    <option value={1}>Hall 1</option>
-                    <option value={2}>Hall 2</option>
-                    <option value={3}>Hall 3</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 border-2 border-blue-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">Selected Booth</p>
-                    <p className="text-lg font-bold text-gray-800">
-                      {formData.boothSize.charAt(0).toUpperCase() + formData.boothSize.slice(1)} - {boothDetails[formData.boothSize].size}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-600">Total Amount</p>
-                    <p className="text-2xl font-bold text-blue-600 flex items-center gap-1">
-                      <FaDollarSign className="text-xl" />
-                      {boothPrices[formData.boothSize]}
-                    </p>
-                  </div>
-                </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Hall Number *
+                </label>
+                <select
+                  name="hallNumber"
+                  value={formData.hallNumber}
+                  onChange={handleChange}
+                  required
+                  disabled={isLoading}
+                  className="input-field"
+                >
+                  <option value={1}>Hall 1</option>
+                  <option value={2}>Hall 2</option>
+                  <option value={3}>Hall 3</option>
+                </select>
+                <p className="text-sm text-gray-500 mt-1">Select the hall where you want to exhibit</p>
               </div>
             </div>
 
@@ -437,8 +423,10 @@ const ExhibitorRegistration = ({ onBack }) => {
                         type="tel"
                         value={employee.phone}
                         onChange={(e) => handleEmployeeChange(index, 'phone', e.target.value)}
-                        placeholder="Phone Number"
+                        placeholder="11 digit phone number"
                         disabled={isLoading}
+                        pattern="\d{11}"
+                        maxLength="11"
                         className="input-field"
                       />
                     </div>

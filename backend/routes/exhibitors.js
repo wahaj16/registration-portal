@@ -3,14 +3,6 @@ const Exhibitor = require('../models/Exhibitor');
 const adminAuth = require('../middleware/adminAuth');
 const router = express.Router();
 
-// Booth pricing
-const BOOTH_PRICES = {
-  small: 500,
-  medium: 800,
-  large: 1200,
-  premium: 1800
-};
-
 // Generate employee numbers for each employee
 const generateEmployeeNumbers = async (employees, exhibitorNumber) => {
   return employees.map((employee, index) => ({
@@ -29,7 +21,6 @@ router.post('/register', async (req, res) => {
       phone, 
       website, 
       industry, 
-      boothSize, 
       hallNumber,
       description, 
       specialRequirements,
@@ -52,19 +43,9 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // Validate booth size
-    if (!BOOTH_PRICES[boothSize]) {
-      return res.status(400).json({ 
-        message: 'Invalid booth size selected.'
-      });
-    }
-
     // Generate exhibitor number
     const count = await Exhibitor.countDocuments();
     const exhibitorNumber = `EXH${String(count + 1).padStart(6, '0')}`;
-
-    // Calculate total amount
-    const totalAmount = BOOTH_PRICES[boothSize];
 
     // Generate employee numbers
     const employeesWithNumbers = await generateEmployeeNumbers(employees || [], exhibitorNumber);
@@ -78,12 +59,10 @@ router.post('/register', async (req, res) => {
       phone,
       website,
       industry,
-      boothSize,
       hallNumber: parseInt(hallNumber),
       description,
       specialRequirements,
-      employees: employeesWithNumbers,
-      totalAmount
+      employees: employeesWithNumbers
     });
 
     await exhibitor.save();
@@ -99,12 +78,10 @@ router.post('/register', async (req, res) => {
         phone: exhibitor.phone,
         website: exhibitor.website,
         industry: exhibitor.industry,
-        boothSize: exhibitor.boothSize,
         hallNumber: exhibitor.hallNumber,
         description: exhibitor.description,
         specialRequirements: exhibitor.specialRequirements,
         employees: exhibitor.employees,
-        totalAmount: exhibitor.totalAmount,
         registrationDate: exhibitor.registrationDate,
         status: exhibitor.status
       }
@@ -198,16 +175,6 @@ router.get('/stats/overview', adminAuth, async (req, res) => {
       Exhibitor.countDocuments({ hallNumber: 3 })
     ]);
 
-    const boothStats = await Exhibitor.aggregate([
-      {
-        $group: {
-          _id: '$boothSize',
-          count: { $sum: 1 },
-          totalRevenue: { $sum: '$totalAmount' }
-        }
-      }
-    ]);
-
     res.json({
       message: 'Exhibitor statistics retrieved successfully',
       stats: {
@@ -219,8 +186,7 @@ router.get('/stats/overview', adminAuth, async (req, res) => {
           hall1: hallStats[0],
           hall2: hallStats[1],
           hall3: hallStats[2]
-        },
-        byBoothSize: boothStats
+        }
       }
     });
   } catch (error) {

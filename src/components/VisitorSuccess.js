@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FaCheckCircle, FaPrint, FaArrowLeft, FaUser, FaEnvelope, FaPhone, FaBuilding, FaCalendar, FaBarcode } from 'react-icons/fa';
+import { FaCheckCircle, FaPrint, FaArrowLeft, FaUser, FaEnvelope, FaPhone, FaBuilding, FaCalendar, FaBarcode, FaBriefcase } from 'react-icons/fa';
 import BarcodeGenerator from './BarcodeGenerator';
 
 const VisitorSuccess = ({ visitorData, onBack }) => {
@@ -67,6 +67,15 @@ const VisitorSuccess = ({ visitorData, onBack }) => {
                     <span className="font-semibold text-gray-800 break-words">{visitorData.name}</span>
                   </div>
                 </div>
+                {visitorData.designation && (
+                  <div className="flex items-start gap-3">
+                    <FaBriefcase className="text-blue-600 mt-1 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm text-gray-600 block">Designation</span>
+                      <span className="font-semibold text-gray-800 break-words">{visitorData.designation}</span>
+                    </div>
+                  </div>
+                )}
                 <div className="flex items-start gap-3">
                   <FaEnvelope className="text-blue-600 mt-1 flex-shrink-0" />
                   <div className="flex-1 min-w-0">

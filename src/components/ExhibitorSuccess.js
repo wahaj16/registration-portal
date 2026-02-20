@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FaCheckCircle, FaPrint, FaArrowLeft, FaBuilding, FaUser, FaEnvelope, FaPhone, FaIndustry, FaGlobe, FaWarehouse, FaDollarSign, FaBarcode, FaUsers } from 'react-icons/fa';
+import { FaCheckCircle, FaPrint, FaArrowLeft, FaBuilding, FaUser, FaEnvelope, FaPhone, FaIndustry, FaGlobe, FaWarehouse, FaBarcode, FaUsers } from 'react-icons/fa';
 import BarcodeGenerator from './BarcodeGenerator';
 
 const ExhibitorSuccess = ({ exhibitorData, onBack }) => {
@@ -128,25 +128,10 @@ const ExhibitorSuccess = ({ exhibitorData, onBack }) => {
                 <FaWarehouse className="text-blue-600" />
                 Booth Information
               </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 text-center border border-blue-200">
-                  <div className="text-sm text-gray-600 mb-1">Booth Size</div>
-                  <div className="text-xl md:text-2xl font-bold text-blue-600 capitalize">
-                    {exhibitorData.boothSize}
-                  </div>
-                </div>
-                <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 text-center border border-blue-200">
-                  <div className="text-sm text-gray-600 mb-1">Hall Number</div>
-                  <div className="text-xl md:text-2xl font-bold text-blue-600">
-                    Hall {exhibitorData.hallNumber}
-                  </div>
-                </div>
-                <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 text-center border border-green-200">
-                  <div className="text-sm text-gray-600 mb-1">Total Amount</div>
-                  <div className="text-xl md:text-2xl font-bold text-green-600 flex items-center justify-center gap-1">
-                    <FaDollarSign className="text-lg" />
-                    {exhibitorData.totalAmount}
-                  </div>
+              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 text-center border border-blue-200">
+                <div className="text-sm text-gray-600 mb-1">Hall Number</div>
+                <div className="text-2xl md:text-3xl font-bold text-blue-600">
+                  Hall {exhibitorData.hallNumber}
                 </div>
               </div>
             </div>

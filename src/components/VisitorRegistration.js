@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FaArrowLeft, FaUser, FaEnvelope, FaPhone, FaBuilding, FaHeart } from 'react-icons/fa';
+import { FaArrowLeft, FaUser, FaEnvelope, FaPhone, FaBuilding, FaHeart, FaBriefcase } from 'react-icons/fa';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 import VisitorSuccess from './VisitorSuccess';
 import { API_ENDPOINTS } from '../config/api';
 
@@ -11,26 +12,45 @@ const VisitorRegistration = ({ onBack }) => {
     email: '',
     phone: '',
     company: '',
+    designation: '',
     interests: ''
   });
 
   const [isLoading, setIsLoading] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [visitorData, setVisitorData] = useState(null);
-  const [error, setError] = useState('');
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
+    
+    // Phone number validation - only allow digits and limit to 11
+    if (name === 'phone') {
+      const digitsOnly = value.replace(/\D/g, '');
+      if (digitsOnly.length <= 11) {
+        setFormData({
+          ...formData,
+          [name]: digitsOnly
+        });
+      }
+      return;
+    }
+    
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: value
     });
-    if (error) setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
+
+    // Validate phone number length
+    if (formData.phone.length !== 11) {
+      toast.error('Phone number must be exactly 11 digits');
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const response = await axios.post(API_ENDPOINTS.VISITORS_REGISTER, formData);
@@ -38,14 +58,11 @@ const VisitorRegistration = ({ onBack }) => {
       if (response.data.visitor) {
         setVisitorData(response.data.visitor);
         setRegistrationSuccess(true);
+        toast.success('Registration successful!');
       }
     } catch (error) {
       console.error('Registration error:', error);
-      if (error.response?.data?.message) {
-        setError(error.response.data.message);
-      } else {
-        setError('Registration failed. Please try again.');
-      }
+      toast.error(error.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -59,6 +76,7 @@ const VisitorRegistration = ({ onBack }) => {
       email: '',
       phone: '',
       company: '',
+      designation: '',
       interests: ''
     });
   };
@@ -102,16 +120,6 @@ const VisitorRegistration = ({ onBack }) => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg"
-              >
-                {error}
-              </motion.div>
-            )}
-
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 <FaUser className="inline mr-2" />
@@ -149,7 +157,7 @@ const VisitorRegistration = ({ onBack }) => {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 <FaPhone className="inline mr-2" />
-                Phone Number *
+                Phone Number (11 digits) *
               </label>
               <input
                 type="tel"
@@ -157,10 +165,15 @@ const VisitorRegistration = ({ onBack }) => {
                 value={formData.phone}
                 onChange={handleChange}
                 required
-                placeholder="Enter your phone number"
+                placeholder="Enter 11 digit phone number"
                 disabled={isLoading}
+                pattern="\d{11}"
+                maxLength="11"
                 className="input-field"
               />
+              <p className="text-xs text-gray-500 mt-1">
+                {formData.phone.length}/11 digits
+              </p>
             </div>
 
             <div>
@@ -174,6 +187,23 @@ const VisitorRegistration = ({ onBack }) => {
                 value={formData.company}
                 onChange={handleChange}
                 placeholder="Enter your company name (optional)"
+                disabled={isLoading}
+                className="input-field"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <FaBriefcase className="inline mr-2" />
+                Designation *
+              </label>
+              <input
+                type="text"
+                name="designation"
+                value={formData.designation}
+                onChange={handleChange}
+                required
+                placeholder="Enter your designation/job title"
                 disabled={isLoading}
                 className="input-field"
               />
