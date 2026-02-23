@@ -1,13 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FaCheckCircle, FaPrint, FaArrowLeft, FaUser, FaEnvelope, FaPhone, FaBuilding, FaCalendar, FaBarcode, FaBriefcase } from 'react-icons/fa';
+import { FaCheckCircle, FaArrowLeft, FaUser, FaEnvelope, FaPhone, FaBuilding, FaCalendar, FaBarcode, FaBriefcase } from 'react-icons/fa';
 import BarcodeGenerator from './BarcodeGenerator';
 
 const VisitorSuccess = ({ visitorData, onBack }) => {
-  const handlePrint = () => {
-    window.print();
-  };
-
   const handleNewRegistration = () => {
     onBack();
   };
@@ -139,18 +135,11 @@ const VisitorSuccess = ({ visitorData, onBack }) => {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="flex flex-col sm:flex-row gap-4 mb-6"
+          className="mb-6"
         >
           <button
-            onClick={handlePrint}
-            className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white py-4 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105"
-          >
-            <FaPrint className="text-xl" />
-            Print Card
-          </button>
-          <button
             onClick={handleNewRegistration}
-            className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-4 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105"
+            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-4 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105"
           >
             <FaArrowLeft />
             New Registration

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaArrowLeft, FaBuilding, FaEnvelope, FaPhone, FaGlobe, FaIndustry, FaWarehouse, FaUsers, FaPlus, FaTrash } from 'react-icons/fa';
 import axios from 'axios';
@@ -6,7 +7,8 @@ import toast from 'react-hot-toast';
 import ExhibitorSuccess from './ExhibitorSuccess';
 import { API_ENDPOINTS } from '../config/api';
 
-const ExhibitorRegistration = ({ onBack }) => {
+const ExhibitorRegistration = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     companyName: '',
     contactPerson: '',
@@ -154,7 +156,7 @@ const ExhibitorRegistration = ({ onBack }) => {
       >
         <motion.button
           whileHover={{ x: -5 }}
-          onClick={onBack}
+          onClick={() => navigate('/')}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 font-medium transition-colors"
         >
           <FaArrowLeft /> Back to Home

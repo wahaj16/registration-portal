@@ -1,32 +1,20 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaUsers, FaBuilding, FaUserShield } from 'react-icons/fa';
-import VisitorRegistration from './VisitorRegistration';
-import ExhibitorRegistration from './ExhibitorRegistration';
-import AdminAuth from './AdminAuth';
 
 const Dashboard = () => {
-  const [currentView, setCurrentView] = useState('dashboard');
+  const navigate = useNavigate();
 
   const handleRegistration = (type) => {
-    setCurrentView(type.toLowerCase());
+    if (type === 'visitor') {
+      navigate('/visitor');
+    } else if (type === 'exhibitor') {
+      navigate('/exhibitor');
+    } else if (type === 'administrator') {
+      navigate('/admin');
+    }
   };
-
-  const handleBack = () => {
-    setCurrentView('dashboard');
-  };
-
-  if (currentView === 'visitor') {
-    return <VisitorRegistration onBack={handleBack} />;
-  }
-
-  if (currentView === 'exhibitor') {
-    return <ExhibitorRegistration onBack={handleBack} />;
-  }
-
-  if (currentView === 'administrator') {
-    return <AdminAuth onBack={handleBack} />;
-  }
 
   const cards = [
     {

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaArrowLeft, FaUser, FaEnvelope, FaPhone, FaBuilding, FaHeart, FaBriefcase } from 'react-icons/fa';
 import axios from 'axios';
@@ -6,7 +7,8 @@ import toast from 'react-hot-toast';
 import VisitorSuccess from './VisitorSuccess';
 import { API_ENDPOINTS } from '../config/api';
 
-const VisitorRegistration = ({ onBack }) => {
+const VisitorRegistration = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -99,7 +101,7 @@ const VisitorRegistration = ({ onBack }) => {
       >
         <motion.button
           whileHover={{ x: -5 }}
-          onClick={onBack}
+          onClick={() => navigate('/')}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 font-medium transition-colors"
         >
           <FaArrowLeft /> Back to Home

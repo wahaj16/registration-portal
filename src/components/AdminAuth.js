@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaArrowLeft, FaUserShield, FaEnvelope, FaLock, FaUser, FaSpinner } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import AdminDashboard from './AdminDashboard';
 
-const AdminAuth = ({ onBack }) => {
+const AdminAuth = () => {
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
@@ -76,7 +78,7 @@ const AdminAuth = ({ onBack }) => {
   const handleLogout = () => {
     logout();
     toast.success('Logged out successfully');
-    onBack();
+    navigate('/');
   };
 
   if (loading) {
@@ -107,7 +109,7 @@ const AdminAuth = ({ onBack }) => {
       >
         <motion.button
           whileHover={{ x: -5 }}
-          onClick={onBack}
+          onClick={() => navigate('/')}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 font-medium transition-colors"
         >
           <FaArrowLeft /> Back to Home
