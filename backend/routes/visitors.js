@@ -6,7 +6,7 @@ const router = express.Router();
 // Register a new visitor
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, phone, company, interests } = req.body;
+    const { name, email, phone, company, designation, interests } = req.body;
 
     // Check if visitor with this email already exists
     const existingVisitor = await Visitor.findOne({ email });
@@ -28,6 +28,7 @@ router.post('/register', async (req, res) => {
       email,
       phone,
       company,
+      designation,
       interests
     });
 
@@ -42,6 +43,7 @@ router.post('/register', async (req, res) => {
         email: visitor.email,
         phone: visitor.phone,
         company: visitor.company,
+        designation: visitor.designation,
         interests: visitor.interests,
         registrationDate: visitor.registrationDate
       }
