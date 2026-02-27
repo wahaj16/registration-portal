@@ -17,9 +17,19 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // Generate visitor number
-    const count = await Visitor.countDocuments();
-    const visitorNumber = `VIS${String(count + 1).padStart(6, '0')}`;
+    // Generate unique visitor number
+    let visitorNumber;
+    let isUnique = false;
+    let count = await Visitor.countDocuments();
+    
+    while (!isUnique) {
+      count++;
+      visitorNumber = `VIS${String(count).padStart(6, '0')}`;
+      const existing = await Visitor.findOne({ visitorNumber });
+      if (!existing) {
+        isUnique = true;
+      }
+    }
 
     // Create new visitor
     const visitor = new Visitor({

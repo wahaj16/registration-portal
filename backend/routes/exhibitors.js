@@ -43,9 +43,19 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // Generate exhibitor number
-    const count = await Exhibitor.countDocuments();
-    const exhibitorNumber = `EXH${String(count + 1).padStart(6, '0')}`;
+    // Generate unique exhibitor number
+    let exhibitorNumber;
+    let isUnique = false;
+    let count = await Exhibitor.countDocuments();
+    
+    while (!isUnique) {
+      count++;
+      exhibitorNumber = `EXH${String(count).padStart(6, '0')}`;
+      const existing = await Exhibitor.findOne({ exhibitorNumber });
+      if (!existing) {
+        isUnique = true;
+      }
+    }
 
     // Generate employee numbers
     const employeesWithNumbers = await generateEmployeeNumbers(employees || [], exhibitorNumber);
