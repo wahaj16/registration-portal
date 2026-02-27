@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
+
 const app = express();
 
 // Middleware
@@ -36,13 +37,30 @@ app.use('/api/exhibitors', require('./routes/exhibitors'));
 app.use('/api/admin', require('./routes/admin'));
 
 // Serve static assets in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/build')));
+// if (process.env.NODE_ENV === 'production') {
+//   app.use(express.static(path.join(__dirname, '../client/build')));
   
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
-  });
-}
+//   app.get('*', (req, res) => {
+//     res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+//   });
+// }
+
+
+// if (process.env.NODE_ENV === 'production') {
+//   const buildPath = path.join(__dirname, '../client/build');
+
+//   if (fs.existsSync(buildPath)) {
+//     app.use(express.static(buildPath));
+//     app.get('*', (req, res) => {
+//       res.sendFile(path.join(buildPath, 'index.html'));
+//     });
+//   } else {
+//     console.warn('⚠️ client/build not found. Skipping static serve.');
+//   }
+// }
+app.get('/', (req, res) => {
+  res.send('API is running 🚀');
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
