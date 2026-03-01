@@ -254,20 +254,8 @@ const AdminAuth = () => {
             </div>
 
             {isLogin && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                className="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-4 mt-4 border border-orange-200"
-              >
-                <p className="text-sm font-semibold text-gray-700 mb-2">Demo Credentials:</p>
-                <div className="space-y-1 text-sm text-gray-600">
-                  <p><span className="font-medium">Email:</span> admin@admin.com</p>
-                  <p><span className="font-medium">Password:</span> admin123</p>
-                </div>
-                <p className="text-xs text-gray-500 mt-2 italic">
-                  You can also create a new admin account
-                </p>
+              <motion.div >
+               
               </motion.div>
             )}
           </form>

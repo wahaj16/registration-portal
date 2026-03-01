@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaSearch, FaUser, FaEnvelope, FaPhone, FaBuilding, FaCalendar, FaTimes, FaBarcode, FaCheckCircle, FaPrint, FaBriefcase } from 'react-icons/fa';
+import { FaSearch, FaUser, FaEnvelope, FaPhone, FaBuilding, FaCalendar, FaTimes, FaBarcode, FaCheckCircle, FaPrint, FaBriefcase, FaFilePdf } from 'react-icons/fa';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import BarcodeGenerator from './BarcodeGenerator';
 import { API_ENDPOINTS } from '../config/api';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const VisitorsList = () => {
   const [visitors, setVisitors] = useState([]);
@@ -252,6 +254,79 @@ const VisitorsList = () => {
     printWindow.document.close();
   };
 
+  const handleExportPDF = () => {
+    try {
+      const doc = new jsPDF('l', 'mm', 'a4'); // landscape orientation
+      
+      // Add title
+      doc.setFontSize(18);
+      doc.setTextColor(40);
+      doc.text('Visitors Report', 14, 15);
+      
+      // Add date
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 22);
+      doc.text(`Total Visitors: ${visitors.length}`, 14, 27);
+      
+      // Prepare table data
+      const tableData = visitors.map(visitor => [
+        visitor.visitorNumber,
+        visitor.name,
+        visitor.designation || 'N/A',
+        visitor.email,
+        visitor.phone,
+        visitor.company || 'N/A',
+        new Date(visitor.registrationDate).toLocaleDateString(),
+        visitor.status?.toUpperCase() || 'ACTIVE'
+      ]);
+      
+      // Add table
+      autoTable(doc, {
+        startY: 32,
+        head: [['Visitor ID', 'Name', 'Designation', 'Email', 'Phone', 'Company', 'Registration Date', 'Status']],
+        body: tableData,
+        theme: 'striped',
+        headStyles: {
+          fillColor: [102, 126, 234],
+          textColor: 255,
+          fontStyle: 'bold',
+          fontSize: 9
+        },
+        bodyStyles: {
+          fontSize: 8,
+          textColor: 50
+        },
+        alternateRowStyles: {
+          fillColor: [245, 247, 250]
+        },
+        margin: { top: 32, left: 14, right: 14 },
+        styles: {
+          cellPadding: 3,
+          overflow: 'linebreak',
+          cellWidth: 'wrap'
+        },
+        columnStyles: {
+          0: { cellWidth: 25 },
+          1: { cellWidth: 35 },
+          2: { cellWidth: 30 },
+          3: { cellWidth: 45 },
+          4: { cellWidth: 25 },
+          5: { cellWidth: 35 },
+          6: { cellWidth: 30 },
+          7: { cellWidth: 20 }
+        }
+      });
+      
+      // Save the PDF
+      doc.save(`visitors-report-${new Date().toISOString().split('T')[0]}.pdf`);
+      toast.success('PDF exported successfully!');
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      toast.error('Failed to export PDF');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -272,15 +347,23 @@ const VisitorsList = () => {
             <h2 className="text-2xl font-bold text-gray-800">Registered Visitors</h2>
             <p className="text-gray-600">Total: {visitors.length} visitors</p>
           </div>
-          <div className="relative">
-            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search visitors..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all outline-none bg-white w-full md:w-80"
-            />
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={handleExportPDF}
+              className="flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-pink-500 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
+            >
+              <FaFilePdf /> Export PDF Report
+            </button>
+            <div className="relative">
+              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search visitors..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all outline-none bg-white w-full sm:w-80"
+              />
+            </div>
           </div>
         </div>
       </div>

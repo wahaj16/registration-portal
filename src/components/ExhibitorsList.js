@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaSearch, FaBuilding, FaEnvelope, FaPhone, FaGlobe, FaIndustry, FaWarehouse, FaDollarSign, FaTimes, FaBarcode, FaUsers, FaCheckCircle, FaClock, FaTimesCircle, FaFilter, FaPrint } from 'react-icons/fa';
+import { FaSearch, FaBuilding, FaEnvelope, FaPhone, FaGlobe, FaIndustry, FaWarehouse, FaDollarSign, FaTimes, FaBarcode, FaUsers, FaCheckCircle, FaClock, FaTimesCircle, FaFilter, FaPrint, FaFilePdf } from 'react-icons/fa';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import BarcodeGenerator from './BarcodeGenerator';
 import { API_ENDPOINTS } from '../config/api';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const ExhibitorsList = ({ hallNumber = null }) => {
   const [exhibitors, setExhibitors] = useState([]);
@@ -278,6 +280,87 @@ const ExhibitorsList = ({ hallNumber = null }) => {
     printWindow.document.close();
   };
 
+  const handleExportPDF = () => {
+    try {
+      const doc = new jsPDF('l', 'mm', 'a4'); // landscape orientation
+      
+      // Add title
+      doc.setFontSize(18);
+      doc.setTextColor(40);
+      doc.text('Exhibitors Report', 14, 15);
+      
+      // Add date and filters
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 22);
+      doc.text(`Total Exhibitors: ${exhibitors.length}`, 14, 27);
+      if (hallNumber) {
+        doc.text(`Filtered by: Hall ${hallNumber}`, 14, 32);
+      }
+      
+      // Prepare table data
+      const tableData = exhibitors.map(exhibitor => [
+        exhibitor.exhibitorNumber,
+        exhibitor.companyName,
+        exhibitor.contactPerson,
+        exhibitor.email,
+        exhibitor.phone,
+        exhibitor.industry || 'N/A',
+        `Hall ${exhibitor.hallNumber}`,
+        exhibitor.employees?.length || 0,
+        new Date(exhibitor.registrationDate).toLocaleDateString()
+      ]);
+      
+      // Add table
+      autoTable(doc, {
+        startY: hallNumber ? 37 : 32,
+        head: [['Exhibitor ID', 'Company', 'Contact Person', 'Email', 'Phone', 'Industry', 'Hall', 'Employees', 'Registration Date']],
+        body: tableData,
+        theme: 'striped',
+        headStyles: {
+          fillColor: [147, 51, 234],
+          textColor: 255,
+          fontStyle: 'bold',
+          fontSize: 9
+        },
+        bodyStyles: {
+          fontSize: 8,
+          textColor: 50
+        },
+        alternateRowStyles: {
+          fillColor: [245, 247, 250]
+        },
+        margin: { top: 32, left: 14, right: 14 },
+        styles: {
+          cellPadding: 3,
+          overflow: 'linebreak',
+          cellWidth: 'wrap'
+        },
+        columnStyles: {
+          0: { cellWidth: 28 },
+          1: { cellWidth: 40 },
+          2: { cellWidth: 35 },
+          3: { cellWidth: 45 },
+          4: { cellWidth: 25 },
+          5: { cellWidth: 30 },
+          6: { cellWidth: 18 },
+          7: { cellWidth: 20 },
+          8: { cellWidth: 30 }
+        }
+      });
+      
+      // Save the PDF
+      const filename = hallNumber 
+        ? `exhibitors-hall${hallNumber}-report-${new Date().toISOString().split('T')[0]}.pdf`
+        : `exhibitors-report-${new Date().toISOString().split('T')[0]}.pdf`;
+      doc.save(filename);
+      toast.success('PDF exported successfully!');
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      toast.error('Failed to export PDF');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -301,15 +384,23 @@ const ExhibitorsList = ({ hallNumber = null }) => {
               </h2>
               <p className="text-gray-600">Total: {filteredExhibitors.length} exhibitors</p>
             </div>
-            <div className="relative">
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search exhibitors..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:border-purple-500 focus:ring-4 focus:ring-purple-100 transition-all outline-none bg-white w-full md:w-80"
-              />
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={handleExportPDF}
+                className="flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
+              >
+                <FaFilePdf /> Export PDF Report
+              </button>
+              <div className="relative">
+                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search exhibitors..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:border-purple-500 focus:ring-4 focus:ring-purple-100 transition-all outline-none bg-white w-full sm:w-80"
+                />
+              </div>
             </div>
           </div>
           
