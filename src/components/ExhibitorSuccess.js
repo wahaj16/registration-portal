@@ -36,7 +36,7 @@ const ExhibitorSuccess = ({ exhibitorData, onBack }) => {
             <FaCheckCircle className="text-4xl text-white" />
           </motion.div>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Exhibitor Registration Successful!</h2>
-          <p className="text-gray-600 text-lg">Your exhibitor registration has been submitted and is pending approval.</p>
+          <p className="text-gray-600 text-lg">Your exhibitor registration has been submitted.</p>
         </motion.div>
 
         {/* Exhibitor Card */}
