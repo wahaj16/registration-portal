@@ -66,16 +66,284 @@ const ExhibitorsList = ({ hallNumber = null }) => {
   };
 
   const handlePrintCard = (exhibitor) => {
+      const printWindow = window.open('', '_blank');
+      const printContent = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Exhibitor Card - ${exhibitor.companyName}</title>
+            <meta charset="UTF-8">
+            <style>
+              @page {
+                size: 90mm 55mm;
+                margin: 0;
+              }
+
+              * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                color-adjust: exact;
+              }
+
+              html {
+                width: 90mm;
+                height: 55mm;
+              }
+
+              body {
+                width: 90mm;
+                height: 55mm;
+                margin: 0;
+                padding: 0;
+                font-family: 'Arial', sans-serif;
+                background: white;
+                overflow: hidden;
+              }
+
+              .card {
+                width: 90mm;
+                height: 55mm;
+                background: white;
+                position: relative;
+                padding: 5mm;
+                display: flex;
+                flex-direction: column;
+              }
+
+              .header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 4mm;
+              }
+
+              .event-logo {
+                width: 28mm;
+                height: auto;
+                max-height: 10mm;
+                object-fit: contain;
+              }
+
+              .pfma-logo {
+                width: 15mm;
+                height: auto;
+                max-height: 10mm;
+                object-fit: contain;
+              }
+
+              .content {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                flex: 1;
+                gap: 3mm;
+              }
+
+              .exhibitor-info {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+              }
+
+              .exhibitor-name {
+                font-size: 16px;
+                font-weight: bold;
+                color: #000;
+                margin-bottom: 2mm;
+                line-height: 1.1;
+              }
+
+              .exhibitor-contact {
+                font-size: 13px;
+                color: #333;
+                font-weight: 500;
+                margin-bottom: 1mm;
+                line-height: 1.2;
+              }
+
+              .exhibitor-hall {
+                font-size: 10px;
+                color: #666;
+                font-style: italic;
+                line-height: 1.2;
+              }
+
+              .barcode-section {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+                min-width: 22mm;
+              }
+
+              #barcode {
+                display: block;
+                width: 22mm;
+                height: auto;
+              }
+
+              .barcode-section svg {
+                width: 22mm !important;
+                height: auto !important;
+                display: block !important;
+              }
+
+              .barcode-section canvas {
+                width: 22mm !important;
+                height: auto !important;
+                display: block !important;
+              }
+
+              .footer {
+                position: absolute;
+                bottom: 3mm;
+                left: 0;
+                right: 0;
+                text-align: center;
+                background: linear-gradient(90deg, #4F46E5 0%, #7C3AED 100%);
+                padding: 3mm 0;
+              }
+
+              .footer-text {
+                font-size: 24px;
+                font-weight: bold;
+                color: white;
+                letter-spacing: 8px;
+                text-transform: uppercase;
+              }
+
+              @media print {
+                @page {
+                  size: 90mm 55mm;
+                  margin: 0;
+                }
+
+                html {
+                  width: 90mm;
+                  height: 55mm;
+                  margin: 0;
+                  padding: 0;
+                }
+
+                body {
+                  width: 90mm;
+                  height: 55mm;
+                  margin: 0 !important;
+                  padding: 0 !important;
+                  -webkit-print-color-adjust: exact;
+                  print-color-adjust: exact;
+                }
+
+                * {
+                  -webkit-print-color-adjust: exact;
+                  print-color-adjust: exact;
+                }
+
+                .card {
+                  page-break-inside: avoid;
+                  page-break-after: avoid;
+                  page-break-before: avoid;
+                }
+              }
+
+              @media screen {
+                body {
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  min-height: 100vh;
+                  background: #f0f0f0;
+                }
+
+                .card {
+                  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="card">
+              <div class="header">
+                <img src="${window.location.origin}/pfmmslogo.png" alt="Event Logo" class="event-logo" onerror="this.style.display='none'">
+                <img src="${window.location.origin}/pfmalogo.jfif" alt="PFMA Logo" class="pfma-logo" onerror="this.style.display='none'">
+              </div>
+
+              <div class="content">
+                <div class="exhibitor-info">
+                  <div class="exhibitor-name">${exhibitor.companyName}</div>
+                  <div class="exhibitor-contact">${exhibitor.contactPerson}</div>
+                  <div class="exhibitor-hall">Hall ${exhibitor.hallNumber}</div>
+                </div>
+
+                <div class="barcode-section">
+                  <svg id="barcode"></svg>
+                </div>
+              </div>
+
+              <div class="footer">
+                <div class="footer-text">EXHIBITOR</div>
+              </div>
+            </div>
+
+            <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+            <script>
+              window.onload = function() {
+                try {
+                  var barcodeElement = document.getElementById('barcode');
+                  if (barcodeElement && typeof JsBarcode !== 'undefined') {
+                    JsBarcode(barcodeElement, "${exhibitor.exhibitorNumber}", {
+                      format: "CODE128",
+                      width: 1.5,
+                      height: 40,
+                      displayValue: true,
+                      fontSize: 10,
+                      margin: 2,
+                      marginTop: 5,
+                      marginBottom: 5
+                    });
+                    console.log('Barcode generated successfully');
+                  } else {
+                    console.error('Barcode element or JsBarcode library not found');
+                  }
+                } catch(e) {
+                  console.error('Barcode generation error:', e);
+                  var barcodeElement = document.getElementById('barcode');
+                  if (barcodeElement) {
+                    barcodeElement.innerHTML = '<text style="font-size:10px;font-family:monospace;">${exhibitor.exhibitorNumber}</text>';
+                  }
+                }
+
+                setTimeout(function() {
+                  window.print();
+                  window.onafterprint = function() {
+                    window.close();
+                  };
+                }, 1000);
+              };
+            </script>
+          </body>
+        </html>
+      `;
+
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+    }
+
+  const handlePrintEmployeeCard = (employee, exhibitor) => {
     const printWindow = window.open('', '_blank');
     const printContent = `
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Exhibitor Card - ${exhibitor.companyName}</title>
+          <title>Employee Card - ${employee.name}</title>
           <meta charset="UTF-8">
           <style>
             @page {
-              size: 3.5in 5in;
+              size: 90mm 55mm;
               margin: 0;
             }
             
@@ -88,134 +356,152 @@ const ExhibitorsList = ({ hallNumber = null }) => {
               color-adjust: exact;
             }
             
-            html, body {
-              width: 3.5in;
-              height: 5in;
-              margin: 0;
-              padding: 0;
-              overflow: hidden;
+            html {
+              width: 90mm;
+              height: 55mm;
             }
             
             body {
+              width: 90mm;
+              height: 55mm;
+              margin: 0;
+              padding: 0;
               font-family: 'Arial', sans-serif;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+              background: white;
+              overflow: hidden;
             }
             
             .card {
-              width: 3.2in;
-              height: 4.7in;
+              width: 90mm;
+              height: 55mm;
               background: white;
-              border-radius: 16px;
-              box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+              position: relative;
+              padding: 5mm;
               display: flex;
               flex-direction: column;
-              align-items: center;
-              justify-content: center;
-              padding: 20px;
-              text-align: center;
             }
             
             .header {
-              width: 100%;
-              padding: 15px;
-              background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
-              border-radius: 12px;
-              margin-bottom: 20px;
-            }
-            
-            .header h1 {
-              color: white;
-              font-size: 18px;
-              font-weight: bold;
-              margin-bottom: 5px;
-            }
-            
-            .header p {
-              color: rgba(255,255,255,0.9);
-              font-size: 11px;
-            }
-            
-            .avatar {
-              width: 80px;
-              height: 80px;
-              background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
-              border-radius: 50%;
               display: flex;
-              align-items: center;
-              justify-content: center;
-              color: white;
-              font-size: 36px;
-              font-weight: bold;
-              margin-bottom: 15px;
-              border: 4px solid #f0f0f0;
+              justify-content: space-between;
+              align-items: flex-start;
+              margin-bottom: 4mm;
             }
             
-            .company-name {
-              font-size: 20px;
+            .event-logo {
+              width: 28mm;
+              height: auto;
+              max-height: 10mm;
+              object-fit: contain;
+            }
+            
+            .pfma-logo {
+              width: 15mm;
+              height: auto;
+              max-height: 10mm;
+              object-fit: contain;
+            }
+            
+            .content {
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+              flex: 1;
+              gap: 3mm;
+            }
+            
+            .employee-info {
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+              justify-content: flex-start;
+            }
+            
+            .employee-name {
+              font-size: 16px;
               font-weight: bold;
+              color: #000;
+              margin-bottom: 2mm;
+              line-height: 1.1;
+            }
+            
+            .employee-company {
+              font-size: 13px;
               color: #333;
-              margin-bottom: 8px;
+              font-weight: 500;
+              margin-bottom: 1mm;
               line-height: 1.2;
             }
             
-            .contact-person {
-              font-size: 14px;
+            .employee-position {
+              font-size: 10px;
               color: #666;
-              margin-bottom: 5px;
-              font-weight: 500;
-            }
-            
-            .designation {
-              font-size: 12px;
-              color: #888;
-              margin-bottom: 15px;
-            }
-            
-            .hall-info {
-              display: inline-block;
-              background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
-              color: white;
-              padding: 6px 16px;
-              border-radius: 20px;
-              font-size: 11px;
-              font-weight: bold;
-              margin-bottom: 15px;
+              font-style: italic;
+              line-height: 1.2;
             }
             
             .barcode-section {
-              margin-top: auto;
-              padding-top: 15px;
-              border-top: 2px dashed #e0e0e0;
-              width: 100%;
               display: flex;
               flex-direction: column;
               align-items: center;
+              justify-content: flex-start;
+              min-width: 22mm;
             }
             
-            .barcode-section svg {
-              max-width: 100%;
+            #barcode {
+              display: block;
+              width: 22mm;
               height: auto;
             }
             
+            .barcode-section svg {
+              width: 22mm !important;
+              height: auto !important;
+              display: block !important;
+            }
+            
+            .barcode-section canvas {
+              width: 22mm !important;
+              height: auto !important;
+              display: block !important;
+            }
+            
             .footer {
-              margin-top: 10px;
-              font-size: 9px;
-              color: #999;
+              position: absolute;
+              bottom: 3mm;
+              left: 0;
+              right: 0;
+              text-align: center;
+              background: linear-gradient(90deg, #4F46E5 0%, #7C3AED 100%);
+              padding: 3mm 0;
+            }
+            
+            .footer-text {
+              font-size: 24px;
+              font-weight: bold;
+              color: white;
+              letter-spacing: 8px;
+              text-transform: uppercase;
             }
             
             @media print {
-              html, body {
-                width: 3.5in;
-                height: 5in;
+              @page {
+                size: 90mm 55mm;
+                margin: 0;
+              }
+              
+              html {
+                width: 90mm;
+                height: 55mm;
                 margin: 0;
                 padding: 0;
-                overflow: hidden;
               }
               
               body {
+                width: 90mm;
+                height: 55mm;
+                margin: 0 !important;
+                padding: 0 !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
               }
@@ -224,52 +510,87 @@ const ExhibitorsList = ({ hallNumber = null }) => {
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
               }
+              
+              .card {
+                page-break-inside: avoid;
+                page-break-after: avoid;
+                page-break-before: avoid;
+              }
+            }
+            
+            @media screen {
+              body {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+                background: #f0f0f0;
+              }
+              
+              .card {
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+              }
             }
           </style>
         </head>
         <body>
           <div class="card">
             <div class="header">
-              <h1>EXHIBITOR PASS</h1>
-              <p>Registration Portal</p>
+              <img src="${window.location.origin}/pfmmslogo.png" alt="Event Logo" class="event-logo" onerror="this.style.display='none'">
+              <img src="${window.location.origin}/pfmalogo.jfif" alt="PFMA Logo" class="pfma-logo" onerror="this.style.display='none'">
             </div>
             
-            <div class="avatar">
-              ${exhibitor.companyName.charAt(0).toUpperCase()}
+            <div class="content">
+              <div class="employee-info">
+                <div class="employee-name">${employee.name}</div>
+                <div class="employee-company">${exhibitor.companyName}</div>
+                <div class="employee-position">${employee.position}</div>
+              </div>
+              
+              <div class="barcode-section">
+                <svg id="barcode"></svg>
+              </div>
             </div>
             
-            <div class="company-name">${exhibitor.companyName}</div>
-            
-            <div class="contact-person">${exhibitor.contactPerson}</div>
-            
-            <div class="designation">Exhibitor Representative</div>
-            
-            <div class="hall-info">Hall ${exhibitor.hallNumber} • ${exhibitor.exhibitorNumber}</div>
-            
-            <div class="barcode-section">
-              <div id="barcode"></div>
-              <div class="footer">Scan for verification</div>
+            <div class="footer">
+              <div class="footer-text">EXHIBITOR</div>
             </div>
           </div>
           
           <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
           <script>
             window.onload = function() {
-              JsBarcode("#barcode", "${exhibitor.exhibitorNumber}", {
-                format: "CODE128",
-                width: 1.5,
-                height: 50,
-                displayValue: true,
-                fontSize: 12,
-                margin: 5
-              });
+              try {
+                var barcodeElement = document.getElementById('barcode');
+                if (barcodeElement && typeof JsBarcode !== 'undefined') {
+                  JsBarcode(barcodeElement, "${employee.employeeNumber}", {
+                    format: "CODE128",
+                    width: 1.5,
+                    height: 40,
+                    displayValue: true,
+                    fontSize: 10,
+                    margin: 2,
+                    marginTop: 5,
+                    marginBottom: 5
+                  });
+                  console.log('Barcode generated successfully');
+                } else {
+                  console.error('Barcode element or JsBarcode library not found');
+                }
+              } catch(e) {
+                console.error('Barcode generation error:', e);
+                var barcodeElement = document.getElementById('barcode');
+                if (barcodeElement) {
+                  barcodeElement.innerHTML = '<text style="font-size:10px;font-family:monospace;">${employee.employeeNumber}</text>';
+                }
+              }
               
               setTimeout(function() {
                 window.print();
                 window.onafterprint = function() {
                   window.close();
                 };
-              }, 500);
+              }, 1000);
             };
           </script>
         </body>
@@ -666,14 +987,23 @@ const ExhibitorsList = ({ hallNumber = null }) => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {selectedExhibitor.employees.map((employee, index) => (
                         <div key={index} className="bg-white/80 backdrop-blur-sm rounded-lg p-4 border border-indigo-200">
-                          <div className="flex items-center gap-3 mb-3">
-                            <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
-                              {employee.name.charAt(0).toUpperCase()}
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+                                {employee.name.charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <h4 className="font-bold text-gray-800">{employee.name}</h4>
+                                <p className="text-sm text-gray-600">{employee.position}</p>
+                              </div>
                             </div>
-                            <div>
-                              <h4 className="font-bold text-gray-800">{employee.name}</h4>
-                              <p className="text-sm text-gray-600">{employee.position}</p>
-                            </div>
+                            <button
+                              onClick={() => handlePrintEmployeeCard(employee, selectedExhibitor)}
+                              className="p-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:shadow-lg transition-all"
+                              title="Print Employee Card"
+                            >
+                              <FaPrint />
+                            </button>
                           </div>
                           <div className="space-y-1 text-sm text-gray-600">
                             <p className="flex items-center gap-2">
