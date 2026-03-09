@@ -241,7 +241,7 @@ const VisitorsList = () => {
           <body>
             <div class="card">
               <div class="header">
-                <img src="${window.location.origin}/pfmmslogo.png" alt="Event Logo" class="event-logo" onerror="this.style.display='none'">
+                <img src="${window.location.origin}/pfmmslogo.PNG" alt="Event Logo" class="event-logo" onerror="this.style.display='none'">
                 <img src="${window.location.origin}/pfmalogo.jfif" alt="PFMA Logo" class="pfma-logo" onerror="this.style.display='none'">
               </div>
 
