@@ -39,260 +39,272 @@ const VisitorsList = () => {
   );
 
   const handlePrintCard = (visitor) => {
-    const printWindow = window.open('', '_blank');
-    const printContent = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Visitor Card - ${visitor.name}</title>
-          <meta charset="UTF-8">
-          <style>
-            @page {
-              size: 86mm 54mm;
-              margin: 0;
-            }
-            
-            * {
-              margin: 0;
-              padding: 0;
-              box-sizing: border-box;
-              -webkit-print-color-adjust: exact;
-              print-color-adjust: exact;
-              color-adjust: exact;
-            }
-            
-            html, body {
-              width: 86mm;
-              height: 54mm;
-              margin: 0;
-              padding: 0;
-              overflow: hidden;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-            }
-            
-            body {
-              font-family: 'Arial', sans-serif;
-              background: white;
-            }
-            
-            .card {
-              width: 86mm;
-              height: 54mm;
-              background: white;
-              position: relative;
-              padding: 5mm;
-              display: flex;
-              flex-direction: column;
-              border: 1px solid #ddd;
-            }
-            
-            .header {
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-start;
-              margin-bottom: 4mm;
-            }
-            
-            .event-logo {
-              width: 28mm;
-              height: auto;
-              max-height: 10mm;
-              object-fit: contain;
-            }
-            
-            .pfma-logo {
-              width: 15mm;
-              height: auto;
-              max-height: 10mm;
-              object-fit: contain;
-            }
-            
-            .content {
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-start;
-              flex: 1;
-              gap: 3mm;
-            }
-            
-            .visitor-info {
-              flex: 1;
-              display: flex;
-              flex-direction: column;
-              justify-content: flex-start;
-            }
-            
-            .visitor-name {
-              font-size: 16px;
-              font-weight: bold;
-              color: #000;
-              margin-bottom: 2mm;
-              line-height: 1.1;
-            }
-            
-            .visitor-company {
-              font-size: 13px;
-              color: #333;
-              font-weight: 500;
-              margin-bottom: 1mm;
-              line-height: 1.2;
-            }
-            
-            .visitor-designation {
-              font-size: 10px;
-              color: #666;
-              font-style: italic;
-              line-height: 1.2;
-            }
-            
-            .barcode-section {
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content: flex-start;
-              min-width: 22mm;
-            }
-            
-            #barcode {
-              display: block;
-              width: 22mm;
-              height: auto;
-            }
-            
-            .barcode-section svg {
-              width: 22mm !important;
-              height: auto !important;
-              display: block !important;
-            }
-            
-            .barcode-section canvas {
-              width: 22mm !important;
-              height: auto !important;
-              display: block !important;
-            }
-            
-            .footer {
-              position: absolute;
-              bottom: 3mm;
-              left: 0;
-              right: 0;
-              text-align: center;
-              background: linear-gradient(90deg, #8B4789 0%, #6B3E6A 100%);
-              padding: 3mm 0;
-            }
-            
-            .footer-text {
-              font-size: 24px;
-              font-weight: bold;
-              color: white;
-              letter-spacing: 8px;
-              text-transform: uppercase;
-            }
-            
-            @media print {
+      const printWindow = window.open('', '_blank');
+      const printContent = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Visitor Card - ${visitor.name}</title>
+            <meta charset="UTF-8">
+            <style>
               @page {
-                size: 86mm 54mm;
+                size: 90mm 55mm;
                 margin: 0;
               }
-              
-              html, body {
-                width: 86mm;
-                height: 54mm;
+
+              * {
                 margin: 0;
                 padding: 0;
-                overflow: hidden;
-                display: flex;
-                align-items: center;
-                justify-content: center;
+                box-sizing: border-box;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                color-adjust: exact;
               }
-              
+
+              html {
+                width: 90mm;
+                height: 55mm;
+              }
+
               body {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+                width: 90mm;
+                height: 55mm;
+                margin: 0;
+                padding: 0;
+                font-family: 'Arial', sans-serif;
+                background: white;
+                overflow: hidden;
               }
-              
-              * {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-              }
-              
+
               .card {
-                border: none !important;
-                box-shadow: none !important;
+                width: 90mm;
+                height: 55mm;
+                background: white;
+                position: relative;
+                padding: 5mm;
+                display: flex;
+                flex-direction: column;
               }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="card">
-            <div class="header">
-              <img src="/pfmmslogo.png" alt="Event Logo" class="event-logo" onerror="this.style.display='none'">
-              <img src="/pfmalogo.jfif" alt="PFMA Logo" class="pfma-logo" onerror="this.style.display='none'">
-            </div>
-            
-            <div class="content">
-              <div class="visitor-info">
-                <div class="visitor-name">${visitor.name}</div>
-                ${visitor.company ? `<div class="visitor-company">${visitor.company}</div>` : ''}
-                ${visitor.designation ? `<div class="visitor-designation">${visitor.designation}</div>` : ''}
-              </div>
-              
-              <div class="barcode-section">
-                <svg id="barcode"></svg>
-              </div>
-            </div>
-            
-            <div class="footer">
-              <div class="footer-text">VISITOR</div>
-            </div>
-          </div>
-          
-          <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-          <script>
-            window.onload = function() {
-              try {
-                var barcodeElement = document.getElementById('barcode');
-                if (barcodeElement && typeof JsBarcode !== 'undefined') {
-                  JsBarcode(barcodeElement, "${visitor.visitorNumber}", {
-                    format: "CODE128",
-                    width: 1.5,
-                    height: 40,
-                    displayValue: true,
-                    fontSize: 10,
-                    margin: 2,
-                    marginTop: 5,
-                    marginBottom: 5
-                  });
-                  console.log('Barcode generated successfully');
-                } else {
-                  console.error('Barcode element or JsBarcode library not found');
+
+              .header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 4mm;
+              }
+
+              .event-logo {
+                width: 28mm;
+                height: auto;
+                max-height: 10mm;
+                object-fit: contain;
+              }
+
+              .pfma-logo {
+                width: 15mm;
+                height: auto;
+                max-height: 10mm;
+                object-fit: contain;
+              }
+
+              .content {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                flex: 1;
+                gap: 3mm;
+              }
+
+              .visitor-info {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+              }
+
+              .visitor-name {
+                font-size: 16px;
+                font-weight: bold;
+                color: #000;
+                margin-bottom: 2mm;
+                line-height: 1.1;
+              }
+
+              .visitor-company {
+                font-size: 13px;
+                color: #333;
+                font-weight: 500;
+                margin-bottom: 1mm;
+                line-height: 1.2;
+              }
+
+              .visitor-designation {
+                font-size: 10px;
+                color: #666;
+                font-style: italic;
+                line-height: 1.2;
+              }
+
+              .barcode-section {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+                min-width: 22mm;
+              }
+
+              #barcode {
+                display: block;
+                width: 22mm;
+                height: auto;
+              }
+
+              .barcode-section svg {
+                width: 22mm !important;
+                height: auto !important;
+                display: block !important;
+              }
+
+              .barcode-section canvas {
+                width: 22mm !important;
+                height: auto !important;
+                display: block !important;
+              }
+
+              .footer {
+                position: absolute;
+                bottom: 3mm;
+                left: 0;
+                right: 0;
+                text-align: center;
+                background: linear-gradient(90deg, #8B4789 0%, #6B3E6A 100%);
+                padding: 3mm 0;
+              }
+
+              .footer-text {
+                font-size: 24px;
+                font-weight: bold;
+                color: white;
+                letter-spacing: 8px;
+                text-transform: uppercase;
+              }
+
+              @media print {
+                @page {
+                  size: 90mm 55mm;
+                  margin: 0;
                 }
-              } catch(e) {
-                console.error('Barcode generation error:', e);
-                // Fallback: display text if barcode fails
-                var barcodeElement = document.getElementById('barcode');
-                if (barcodeElement) {
-                  barcodeElement.innerHTML = '<text style="font-size:10px;font-family:monospace;">${visitor.visitorNumber}</text>';
+
+                html {
+                  width: 90mm;
+                  height: 55mm;
+                  margin: 0;
+                  padding: 0;
+                }
+
+                body {
+                  width: 90mm;
+                  height: 55mm;
+                  margin: 0 !important;
+                  padding: 0 !important;
+                  -webkit-print-color-adjust: exact;
+                  print-color-adjust: exact;
+                }
+
+                * {
+                  -webkit-print-color-adjust: exact;
+                  print-color-adjust: exact;
+                }
+
+                .card {
+                  page-break-inside: avoid;
+                  page-break-after: avoid;
+                  page-break-before: avoid;
                 }
               }
-              
-              setTimeout(function() {
-                window.print();
-                window.onafterprint = function() {
-                  window.close();
-                };
-              }, 800);
-            };
-          </script>
-        </body>
-      </html>
-    `;
-    
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-  };
+
+              @media screen {
+                body {
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  min-height: 100vh;
+                  background: #f0f0f0;
+                }
+
+                .card {
+                  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="card">
+              <div class="header">
+                <img src="${window.location.origin}/pfmmslogo.png" alt="Event Logo" class="event-logo" onerror="this.style.display='none'">
+                <img src="${window.location.origin}/pfmalogo.jfif" alt="PFMA Logo" class="pfma-logo" onerror="this.style.display='none'">
+              </div>
+
+              <div class="content">
+                <div class="visitor-info">
+                  <div class="visitor-name">${visitor.name}</div>
+                  ${visitor.company ? `<div class="visitor-company">${visitor.company}</div>` : ''}
+                  ${visitor.designation ? `<div class="visitor-designation">${visitor.designation}</div>` : ''}
+                </div>
+
+                <div class="barcode-section">
+                  <svg id="barcode"></svg>
+                </div>
+              </div>
+
+              <div class="footer">
+                <div class="footer-text">VISITOR</div>
+              </div>
+            </div>
+
+            <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+            <script>
+              window.onload = function() {
+                try {
+                  var barcodeElement = document.getElementById('barcode');
+                  if (barcodeElement && typeof JsBarcode !== 'undefined') {
+                    JsBarcode(barcodeElement, "${visitor.visitorNumber}", {
+                      format: "CODE128",
+                      width: 1.5,
+                      height: 40,
+                      displayValue: true,
+                      fontSize: 10,
+                      margin: 2,
+                      marginTop: 5,
+                      marginBottom: 5
+                    });
+                    console.log('Barcode generated successfully');
+                  } else {
+                    console.error('Barcode element or JsBarcode library not found');
+                  }
+                } catch(e) {
+                  console.error('Barcode generation error:', e);
+                  var barcodeElement = document.getElementById('barcode');
+                  if (barcodeElement) {
+                    barcodeElement.innerHTML = '<text style="font-size:10px;font-family:monospace;">${visitor.visitorNumber}</text>';
+                  }
+                }
+
+                setTimeout(function() {
+                  window.print();
+                  window.onafterprint = function() {
+                    window.close();
+                  };
+                }, 1000);
+              };
+            </script>
+          </body>
+        </html>
+      `;
+
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+    }
 
   const handleExportPDF = () => {
     try {
