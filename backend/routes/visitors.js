@@ -107,6 +107,38 @@ router.get('/:visitorNumber', async (req, res) => {
   }
 });
 
+// Check-in visitor
+router.post('/checkin/:visitorNumber', adminAuth, async (req, res) => {
+  try {
+    const visitor = await Visitor.findOne({ visitorNumber: req.params.visitorNumber });
+    
+    if (!visitor) {
+      return res.status(404).json({ message: 'Visitor not found' });
+    }
+
+    // Update check-in time
+    visitor.checkInTime = new Date();
+    await visitor.save();
+
+    res.json({
+      message: 'Visitor checked in successfully',
+      visitor: {
+        visitorNumber: visitor.visitorNumber,
+        name: visitor.name,
+        company: visitor.company,
+        designation: visitor.designation,
+        checkInTime: visitor.checkInTime
+      }
+    });
+  } catch (error) {
+    console.error('Error checking in visitor:', error);
+    res.status(500).json({ 
+      message: 'Server error', 
+      error: error.message 
+    });
+  }
+});
+
 module.exports = router;
 // Get visitor statistics
 router.get('/stats/overview', adminAuth, async (req, res) => {

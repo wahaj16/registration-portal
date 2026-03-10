@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaSearch, FaUser, FaEnvelope, FaPhone, FaBuilding, FaCalendar, FaTimes, FaBarcode, FaCheckCircle, FaPrint, FaBriefcase, FaFilePdf } from 'react-icons/fa';
+import { FaSearch, FaUser, FaEnvelope, FaPhone, FaBuilding, FaCalendar, FaTimes, FaBarcode, FaCheckCircle, FaPrint, FaBriefcase, FaFilePdf, FaSync } from 'react-icons/fa';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import BarcodeGenerator from './BarcodeGenerator';
@@ -15,9 +15,19 @@ const VisitorsList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedVisitor, setSelectedVisitor] = useState(null);
   const [lastProcessedBarcode, setLastProcessedBarcode] = useState('');
+  const [checkInSearch, setCheckInSearch] = useState('');
+  const [lastCheckedInBarcode, setLastCheckedInBarcode] = useState('');
+  const [activeTab, setActiveTab] = useState('list'); // 'list' or 'checkin'
 
   useEffect(() => {
     fetchVisitors();
+    
+    // Auto-refresh every 30 seconds
+    const interval = setInterval(() => {
+      fetchVisitors();
+    }, 30000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   // Auto-download card when barcode is scanned
@@ -39,6 +49,49 @@ const VisitorsList = () => {
       }
     }
   }, [searchTerm, visitors, lastProcessedBarcode]);
+
+  const handleCheckIn = useCallback(async (visitorNumber) => {
+    try {
+      const response = await axios.post(`${API_ENDPOINTS.VISITORS_CHECKIN}/${visitorNumber}`);
+      
+      if (response.data.visitor) {
+        const visitor = response.data.visitor;
+        const checkInTime = new Date(visitor.checkInTime).toLocaleString();
+        
+        toast.success(
+          <div>
+            <div className="font-bold">{visitor.name} checked in!</div>
+            <div className="text-sm">{checkInTime}</div>
+          </div>,
+          { duration: 5000 }
+        );
+        
+        // Refresh visitors list
+        fetchVisitors();
+        
+        // Clear check-in search after 2 seconds
+        setTimeout(() => {
+          setCheckInSearch('');
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Check-in error:', error);
+      toast.error(error.response?.data?.message || 'Failed to check in visitor');
+    }
+  }, []);
+
+  // Auto check-in when QR code is scanned in check-in search
+  useEffect(() => {
+    const trimmedCheckIn = checkInSearch.trim().toUpperCase();
+    
+    // Check if it's a visitor number format (VIS followed by 6 digits)
+    const visitorNumberPattern = /^VIS\d{6}$/;
+    
+    if (visitorNumberPattern.test(trimmedCheckIn) && trimmedCheckIn !== lastCheckedInBarcode) {
+      setLastCheckedInBarcode(trimmedCheckIn);
+      handleCheckIn(trimmedCheckIn);
+    }
+  }, [checkInSearch, lastCheckedInBarcode, handleCheckIn]);
 
   const fetchVisitors = async () => {
     try {
@@ -276,35 +329,154 @@ const VisitorsList = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="glass-effect rounded-xl p-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800">Registered Visitors</h2>
-            <p className="text-gray-600">Total: {visitors.length} visitors</p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <button
-              onClick={handleExportPDF}
-              className="flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-pink-500 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
-            >
-              <FaFilePdf /> Export PDF Report
-            </button>
-            <div className="relative">
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search visitors..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all outline-none bg-white w-full sm:w-80"
-              />
-            </div>
-          </div>
+      {/* Tabs */}
+      <div className="glass-effect rounded-xl p-2">
+        <div className="flex gap-2">
+          <button
+            onClick={() => setActiveTab('list')}
+            className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
+              activeTab === 'list'
+                ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            <FaUser className="inline mr-2" />
+            Visitors List
+          </button>
+          <button
+            onClick={() => setActiveTab('checkin')}
+            className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
+              activeTab === 'checkin'
+                ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            <FaCheckCircle className="inline mr-2" />
+            Check-In
+          </button>
         </div>
       </div>
 
-      {/* Visitors Grid */}
+      {/* Check-In Tab Content */}
+      {activeTab === 'checkin' && (
+        <>
+          {/* Check-In Section */}
+          <div className="glass-effect rounded-xl p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                  <FaCheckCircle className="text-green-600" />
+                  Visitor Check-In
+                </h3>
+                <p className="text-gray-600 text-sm">Scan QR code to record check-in time</p>
+              </div>
+              <div className="relative">
+                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-600" />
+                <input
+                  type="text"
+                  placeholder="Scan QR code here..."
+                  value={checkInSearch}
+                  onChange={(e) => setCheckInSearch(e.target.value)}
+                  className="pl-10 pr-4 py-3 rounded-xl border-2 border-green-300 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all outline-none bg-white w-full sm:w-80 font-mono"
+                  autoComplete="off"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Checked-In Visitors Table */}
+          {visitors.filter(v => v.checkInTime).length > 0 ? (
+            <div className="glass-effect rounded-xl p-6">
+              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <FaCheckCircle className="text-green-600" />
+                Checked-In Visitors ({visitors.filter(v => v.checkInTime).length})
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-green-50 to-emerald-50 border-b-2 border-green-200">
+                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Visitor ID</th>
+                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Name</th>
+                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Company</th>
+                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Designation</th>
+                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Phone</th>
+                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Check-In Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visitors
+                      .filter(v => v.checkInTime)
+                      .sort((a, b) => new Date(b.checkInTime) - new Date(a.checkInTime))
+                      .map((visitor, index) => (
+                        <tr 
+                          key={visitor._id}
+                          className={`border-b border-gray-200 hover:bg-green-50 transition-colors ${
+                            index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                          }`}
+                        >
+                          <td className="px-4 py-3 text-sm font-mono text-gray-800">{visitor.visitorNumber}</td>
+                          <td className="px-4 py-3 text-sm font-semibold text-gray-800">{visitor.name}</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">{visitor.company || 'N/A'}</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">{visitor.designation || 'N/A'}</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">{visitor.phone}</td>
+                          <td className="px-4 py-3 text-sm font-medium text-green-700">
+                            {new Date(visitor.checkInTime).toLocaleString()}
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <div className="glass-effect rounded-xl p-12 text-center">
+              <FaCheckCircle className="text-6xl text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-600 text-lg">No visitors have checked in yet.</p>
+              <p className="text-gray-500 text-sm mt-2">Scan a visitor QR code above to record check-in.</p>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Visitors List Tab Content */}
+      {activeTab === 'list' && (
+        <>
+          {/* Header */}
+          <div className="glass-effect rounded-xl p-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800">Registered Visitors</h2>
+                <p className="text-gray-600">Total: {visitors.length} visitors</p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={fetchVisitors}
+                  disabled={loading}
+                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50"
+                >
+                  <FaSync className={loading ? 'animate-spin' : ''} /> Refresh
+                </button>
+                <button
+                  onClick={handleExportPDF}
+                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-pink-500 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
+                >
+                  <FaFilePdf /> Export PDF Report
+                </button>
+                <div className="relative">
+                  <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search visitors..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all outline-none bg-white w-full sm:w-80"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Visitors Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredVisitors.map((visitor, index) => (
           <motion.div
@@ -363,9 +535,9 @@ const VisitorsList = () => {
         </div>
       )}
 
-      {/* Modal */}
-      <AnimatePresence>
-        {selectedVisitor && (
+          {/* Modal */}
+          <AnimatePresence>
+            {selectedVisitor && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -513,6 +685,8 @@ const VisitorsList = () => {
           </motion.div>
         )}
       </AnimatePresence>
+        </>
+      )}
     </div>
   );
 };

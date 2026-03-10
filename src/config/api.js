@@ -10,6 +10,7 @@ export const API_ENDPOINTS = {
   // Visitor endpoints
   VISITORS_REGISTER: `${API_BASE_URL}/api/visitors/register`,
   VISITORS_LIST: `${API_BASE_URL}/api/visitors`,
+  VISITORS_CHECKIN: `${API_BASE_URL}/api/visitors/checkin`,
   VISITORS_STATS: `${API_BASE_URL}/api/visitors/stats/overview`,
   
   // Exhibitor endpoints
