@@ -98,6 +98,13 @@ router.post('/register', async (req, res) => {
     });
   } catch (error) {
     console.error('Exhibitor registration error:', error);
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      code: error.code,
+      keyPattern: error.keyPattern,
+      keyValue: error.keyValue
+    });
     res.status(500).json({ 
       message: 'Server error during registration', 
       error: error.message 

@@ -24,7 +24,7 @@ const EmployeeSchema = new mongoose.Schema({
   },
   employeeNumber: {
     type: String,
-    unique: true
+    sparse: true
   }
 });
 
