@@ -71,8 +71,8 @@ const ExhibitorsList = ({ hallNumber = null }) => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       
-      canvas.width = 340 * 3;
-      canvas.height = 207 * 3;
+      canvas.width = 325 * 3;  // 86mm at 96dpi
+      canvas.height = 204 * 3; // 54mm at 96dpi
       ctx.scale(3, 3);
       
       const bgImage = new Image();
@@ -84,13 +84,13 @@ const ExhibitorsList = ({ hallNumber = null }) => {
         bgImage.onerror = () => resolve(); // Don't reject, just continue
       });
       
-      ctx.drawImage(bgImage, 0, 0, 340, 207);
+      ctx.drawImage(bgImage, 0, 0, 325, 204);
       
       // Position content in the middle white area (between logos and footer)
-      const contentStartY = 95; // Start content lower to avoid logos
-      const paddingLeft = 19; // 5mm from left
-      const paddingRight = 19; // 5mm from right
-      const maxTextWidth = 200; // More space for text
+      const contentStartY = 93; // proportional to 86x54mm card
+      const paddingLeft = 18;   // ~5mm from left
+      const paddingRight = 18;  // ~5mm from right
+      const maxTextWidth = 192; // proportional text area
       
       // Draw text on left side
       ctx.textAlign = 'left';
@@ -150,7 +150,7 @@ const ExhibitorsList = ({ hallNumber = null }) => {
       // Position barcode on right side with padding from text
       const barcodeWidth = barcodeCanvas.width / 3; // Scale down to 1x for display
       const barcodeHeight = barcodeCanvas.height / 3;
-      const barcodeX = 340 - paddingRight - barcodeWidth;
+      const barcodeX = 325 - paddingRight - barcodeWidth;
       const barcodeY = contentStartY;
       
       // Draw barcode scaled down for sharp rendering
