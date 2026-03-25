@@ -22,10 +22,10 @@ const VisitorsList = () => {
   useEffect(() => {
     fetchVisitors();
     
-    // Auto-refresh every 30 seconds
+    // Auto-refresh every 3 seconds for near real-time updates
     const interval = setInterval(() => {
-      fetchVisitors();
-    }, 30000);
+      fetchVisitors(true); // silent refresh - no loading spinner
+    }, 3000);
     
     return () => clearInterval(interval);
   }, []);
@@ -33,19 +33,18 @@ const VisitorsList = () => {
   // Auto-download card when barcode is scanned
   useEffect(() => {
     const trimmedSearch = searchTerm.trim().toUpperCase();
-    
-    // Check if it's a visitor number format (VIS followed by 6 digits)
     const visitorNumberPattern = /^VIS\d{6}$/;
     
     if (visitorNumberPattern.test(trimmedSearch) && trimmedSearch !== lastProcessedBarcode) {
-      // Find the visitor with this number
       const visitor = visitors.find(v => v.visitorNumber.toUpperCase() === trimmedSearch);
       
       if (visitor) {
         setLastProcessedBarcode(trimmedSearch);
-        // Automatically download the card
         handlePrintCard(visitor);
         toast.success(`Card downloaded for ${visitor.name}`);
+      } else {
+        // Visitor not found yet - fetch immediately and retry
+        fetchVisitors(true);
       }
     }
   }, [searchTerm, visitors, lastProcessedBarcode]);
@@ -66,8 +65,8 @@ const VisitorsList = () => {
           { duration: 5000 }
         );
         
-        // Refresh visitors list
-        fetchVisitors();
+        // Refresh visitors list silently
+        fetchVisitors(true);
         
         // Clear check-in search after 2 seconds
         setTimeout(() => {
@@ -93,16 +92,16 @@ const VisitorsList = () => {
     }
   }, [checkInSearch, lastCheckedInBarcode, handleCheckIn]);
 
-  const fetchVisitors = async () => {
+  const fetchVisitors = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const response = await axios.get(API_ENDPOINTS.VISITORS_LIST);
       setVisitors(response.data.visitors);
     } catch (error) {
       console.error('Error fetching visitors:', error);
-      toast.error('Failed to load visitors');
+      if (!silent) toast.error('Failed to load visitors');
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
