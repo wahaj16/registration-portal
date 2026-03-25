@@ -19,8 +19,11 @@ const BarcodeGenerator = ({ value, width = 2, height = 100, displayValue = true 
   }, [value, width, height, displayValue]);
 
   return (
-    <div className="barcode-container">
-      <svg ref={barcodeRef}></svg>
+    <div style={{ width: '100%', maxWidth: '100%', overflowX: 'hidden' }}>
+      <svg
+        ref={barcodeRef}
+        style={{ width: '100%', height: 'auto', display: 'block' }}
+      ></svg>
     </div>
   );
 };

@@ -113,16 +113,14 @@ const VisitorSuccess = ({ visitorData, onBack }) => {
                 <FaBarcode className="text-gray-600" />
                 Visitor Barcode
               </h4>
-              <div className="bg-white rounded-lg p-4 md:p-6 flex flex-col items-center border-2 border-dashed border-gray-300">
-                <div className="overflow-x-auto w-full flex justify-center">
-                  <BarcodeGenerator 
-                    value={visitorData.visitorNumber} 
-                    width={2} 
-                    height={80} 
-                    displayValue={true}
-                  />
-                </div>
-                <p className="text-sm text-gray-600 text-center mt-4">
+              <div className="bg-white rounded-lg p-4 border-2 border-dashed border-gray-300">
+                <BarcodeGenerator 
+                  value={visitorData.visitorNumber} 
+                  width={2} 
+                  height={80} 
+                  displayValue={true}
+                />
+                <p className="text-sm text-gray-600 text-center mt-3">
                   Present this barcode at the entrance for quick check-in
                 </p>
               </div>
