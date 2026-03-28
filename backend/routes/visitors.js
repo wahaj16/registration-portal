@@ -67,14 +67,38 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// Get all visitors (for admin)
+// Get all visitors (for admin) - with pagination and search
 router.get('/', adminAuth, async (req, res) => {
   try {
-    const visitors = await Visitor.find().sort({ createdAt: -1 });
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const search = req.query.search || '';
+    const skip = (page - 1) * limit;
+
+    // Build search query
+    const query = search ? {
+      $or: [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { visitorNumber: { $regex: search, $options: 'i' } },
+        { company: { $regex: search, $options: 'i' } }
+      ]
+    } : {};
+
+    const [visitors, total] = await Promise.all([
+      Visitor.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Visitor.countDocuments(query)
+    ]);
+
     res.json({
       message: 'Visitors retrieved successfully',
-      count: visitors.length,
-      visitors
+      visitors,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
     });
   } catch (error) {
     console.error('Error fetching visitors:', error);

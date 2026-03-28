@@ -13,23 +13,45 @@ const VisitorsList = () => {
   const [visitors, setVisitors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchInput, setSearchInput] = useState(''); // debounced input
   const [selectedVisitor, setSelectedVisitor] = useState(null);
   const [lastProcessedBarcode, setLastProcessedBarcode] = useState('');
   const [checkInSearch, setCheckInSearch] = useState('');
   const [lastCheckedInBarcode, setLastCheckedInBarcode] = useState('');
-  const [activeTab, setActiveTab] = useState('list'); // 'list' or 'checkin'
+  const [activeTab, setActiveTab] = useState('list');
+  const [pagination, setPagination] = useState({ total: 0, page: 1, totalPages: 1 });
   const isFetchingRef = React.useRef(false);
+  const searchDebounceRef = React.useRef(null);
 
   useEffect(() => {
-    fetchVisitors();
-    
-    // Auto-refresh every 8 seconds - balanced between real-time and server load
+    fetchVisitors(1, searchTerm, false);
     const interval = setInterval(() => {
-      fetchVisitors(true);
-    }, 8000);
-    
+      fetchVisitors(pagination.page, searchTerm, true);
+    }, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Debounce search input - wait 400ms before firing server request
+  useEffect(() => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    
+    // Check if it's a barcode scan (instant, no debounce)
+    const trimmed = searchInput.trim().toUpperCase();
+    const visitorNumberPattern = /^VIS\d{6}$/;
+    
+    if (visitorNumberPattern.test(trimmed)) {
+      setSearchTerm(trimmed);
+      fetchVisitors(1, trimmed, false);
+      return;
+    }
+    
+    searchDebounceRef.current = setTimeout(() => {
+      setSearchTerm(searchInput);
+      fetchVisitors(1, searchInput, false);
+    }, 400);
+    
+    return () => clearTimeout(searchDebounceRef.current);
+  }, [searchInput]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-download card when barcode is scanned
   useEffect(() => {
@@ -44,11 +66,11 @@ const VisitorsList = () => {
         handlePrintCard(visitor);
         toast.success(`Card downloaded for ${visitor.name}`);
       } else {
-        // Visitor not found yet - fetch immediately and retry
-        fetchVisitors(true);
+        // Visitor not in current page - fetch by exact number
+        fetchVisitors(1, trimmedSearch, false);
       }
     }
-  }, [searchTerm, visitors, lastProcessedBarcode]);
+  }, [searchTerm, visitors, lastProcessedBarcode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCheckIn = useCallback(async (visitorNumber) => {
     try {
@@ -66,10 +88,8 @@ const VisitorsList = () => {
           { duration: 5000 }
         );
         
-        // Refresh visitors list silently
-        fetchVisitors(true);
+        fetchVisitors(pagination.page, searchTerm, true);
         
-        // Clear check-in search after 2 seconds
         setTimeout(() => {
           setCheckInSearch('');
         }, 2000);
@@ -78,13 +98,11 @@ const VisitorsList = () => {
       console.error('Check-in error:', error);
       toast.error(error.response?.data?.message || 'Failed to check in visitor');
     }
-  }, []);
+  }, [pagination.page, searchTerm]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto check-in when QR code is scanned in check-in search
+  // Auto check-in when QR code is scanned
   useEffect(() => {
     const trimmedCheckIn = checkInSearch.trim().toUpperCase();
-    
-    // Check if it's a visitor number format (VIS followed by 6 digits)
     const visitorNumberPattern = /^VIS\d{6}$/;
     
     if (visitorNumberPattern.test(trimmedCheckIn) && trimmedCheckIn !== lastCheckedInBarcode) {
@@ -93,14 +111,16 @@ const VisitorsList = () => {
     }
   }, [checkInSearch, lastCheckedInBarcode, handleCheckIn]);
 
-  const fetchVisitors = async (silent = false) => {
-    // Prevent concurrent requests
+  const fetchVisitors = async (page = 1, search = '', silent = false) => {
     if (isFetchingRef.current) return;
     isFetchingRef.current = true;
     try {
       if (!silent) setLoading(true);
-      const response = await axios.get(API_ENDPOINTS.VISITORS_LIST);
+      const response = await axios.get(API_ENDPOINTS.VISITORS_LIST, {
+        params: { page, limit: 50, search }
+      });
       setVisitors(response.data.visitors);
+      setPagination(response.data.pagination);
     } catch (error) {
       console.error('Error fetching visitors:', error);
       if (!silent) toast.error('Failed to load visitors');
@@ -110,12 +130,7 @@ const VisitorsList = () => {
     }
   };
 
-  const filteredVisitors = visitors.filter(visitor =>
-    visitor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    visitor.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    visitor.visitorNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (visitor.company && visitor.company.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredVisitors = visitors; // filtering is now server-side
 
   const handlePrintCard = async (visitor) => {
     try {
@@ -450,12 +465,11 @@ const VisitorsList = () => {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <h2 className="text-2xl font-bold text-gray-800">Registered Visitors</h2>
-                <p className="text-gray-600">Total: {visitors.length} visitors</p>
+                <p className="text-gray-600">Total: {pagination.total} visitors</p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
-                  onClick={fetchVisitors}
-                  disabled={loading}
+                  onClick={fetchVisitors}                  disabled={loading}
                   className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50"
                 >
                   <FaSync className={loading ? 'animate-spin' : ''} /> Refresh
@@ -471,8 +485,8 @@ const VisitorsList = () => {
                   <input
                     type="text"
                     placeholder="Search visitors..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
                     className="pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all outline-none bg-white w-full sm:w-80"
                   />
                 </div>
@@ -538,6 +552,31 @@ const VisitorsList = () => {
           <p className="text-gray-600 text-lg">No visitors found matching your search.</p>
         </div>
       )}
+
+          {/* Pagination */}
+          {pagination.totalPages > 1 && (
+            <div className="glass-effect rounded-xl p-4 flex items-center justify-between gap-4">
+              <p className="text-sm text-gray-600">
+                Page {pagination.page} of {pagination.totalPages} &nbsp;·&nbsp; {pagination.total} total
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => fetchVisitors(pagination.page - 1, searchTerm, false)}
+                  disabled={pagination.page <= 1 || loading}
+                  className="px-4 py-2 rounded-lg bg-blue-500 text-white font-semibold disabled:opacity-40 hover:bg-blue-600 transition-all"
+                >
+                  ← Prev
+                </button>
+                <button
+                  onClick={() => fetchVisitors(pagination.page + 1, searchTerm, false)}
+                  disabled={pagination.page >= pagination.totalPages || loading}
+                  className="px-4 py-2 rounded-lg bg-blue-500 text-white font-semibold disabled:opacity-40 hover:bg-blue-600 transition-all"
+                >
+                  Next →
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Modal */}
           <AnimatePresence>
