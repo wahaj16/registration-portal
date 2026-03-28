@@ -27,7 +27,7 @@ const VisitorsList = () => {
     fetchVisitors(1, searchTerm, false);
     const interval = setInterval(() => {
       fetchVisitors(pagination.page, searchTerm, true);
-    }, 10000);
+    }, 3000);
     return () => clearInterval(interval);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
