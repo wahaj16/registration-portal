@@ -18,14 +18,15 @@ const VisitorsList = () => {
   const [checkInSearch, setCheckInSearch] = useState('');
   const [lastCheckedInBarcode, setLastCheckedInBarcode] = useState('');
   const [activeTab, setActiveTab] = useState('list'); // 'list' or 'checkin'
+  const isFetchingRef = React.useRef(false);
 
   useEffect(() => {
     fetchVisitors();
     
-    // Auto-refresh every 3 seconds for near real-time updates
+    // Auto-refresh every 8 seconds - balanced between real-time and server load
     const interval = setInterval(() => {
-      fetchVisitors(true); // silent refresh - no loading spinner
-    }, 3000);
+      fetchVisitors(true);
+    }, 8000);
     
     return () => clearInterval(interval);
   }, []);
@@ -93,6 +94,9 @@ const VisitorsList = () => {
   }, [checkInSearch, lastCheckedInBarcode, handleCheckIn]);
 
   const fetchVisitors = async (silent = false) => {
+    // Prevent concurrent requests
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
     try {
       if (!silent) setLoading(true);
       const response = await axios.get(API_ENDPOINTS.VISITORS_LIST);
@@ -102,6 +106,7 @@ const VisitorsList = () => {
       if (!silent) toast.error('Failed to load visitors');
     } finally {
       if (!silent) setLoading(false);
+      isFetchingRef.current = false;
     }
   };
 
