@@ -37,7 +37,7 @@ const Dashboard = () => {
       id: 'administrator',
       icon: FaUserShield,
       title: 'Administrator',
-      description: 'Administrative access for managing registrations, monitoring activities, and overseeing event operations.',
+      description: 'Administrative access for managing registrations, monitoring activities, and overseeing event operation.',
       gradient: 'from-orange-500 to-red-500',
       bgGradient: 'from-orange-50 to-red-50',
     },
